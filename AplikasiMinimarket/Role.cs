@@ -8,7 +8,7 @@ namespace AplikasiMinimarket
 {
     internal class Role
     {
-        public string IdRole { get; set; }
+        public int IdRole { get; set; }
         public string NamaRole { get; set; }
 
         public override string ToString()

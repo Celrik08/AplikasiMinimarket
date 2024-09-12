@@ -8,7 +8,7 @@ namespace AplikasiMinimarket
 {
     internal class Pegawai
     {
-        public string IdPegawai { get; set; }
+        public int IdPegawai { get; set; }
         public string NamaPegawai { get; set; }
 
         public override string ToString()

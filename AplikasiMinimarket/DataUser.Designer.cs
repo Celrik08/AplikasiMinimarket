@@ -36,8 +36,8 @@
             label5 = new Label();
             label6 = new Label();
             label7 = new Label();
+            TextId = new TextBox();
             TextUser = new TextBox();
-            TextNama = new TextBox();
             TextPassword = new TextBox();
             ComboPegawai = new ComboBox();
             ComboGudang = new ComboBox();
@@ -46,22 +46,22 @@
             BtnSimpan = new Button();
             BtnUbah = new Button();
             BtnBack = new Button();
-            dataGridView1 = new DataGridView();
-            User = new DataGridViewTextBoxColumn();
-            Nama = new DataGridViewTextBoxColumn();
-            Password = new DataGridViewTextBoxColumn();
-            Pegawai = new DataGridViewTextBoxColumn();
-            Gudang = new DataGridViewTextBoxColumn();
-            Role = new DataGridViewTextBoxColumn();
-            Hapus = new DataGridViewButtonColumn();
+            Data_User = new DataGridView();
             TextPegawai = new TextBox();
             label8 = new Label();
             TextGudang = new TextBox();
             label9 = new Label();
             label10 = new Label();
             TextRole = new TextBox();
+            Id = new DataGridViewTextBoxColumn();
+            User = new DataGridViewTextBoxColumn();
+            Password = new DataGridViewTextBoxColumn();
+            Pegawai = new DataGridViewTextBoxColumn();
+            Gudang = new DataGridViewTextBoxColumn();
+            Role = new DataGridViewTextBoxColumn();
+            Hapus = new DataGridViewButtonColumn();
             panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)Data_User).BeginInit();
             SuspendLayout();
             // 
             // panel1
@@ -151,20 +151,20 @@
             label7.TabIndex = 6;
             label7.Text = "Nama Role";
             // 
+            // TextId
+            // 
+            TextId.Location = new Point(142, 46);
+            TextId.Name = "TextId";
+            TextId.Size = new Size(151, 28);
+            TextId.TabIndex = 7;
+            // 
             // TextUser
             // 
-            TextUser.Location = new Point(142, 46);
+            TextUser.Location = new Point(142, 80);
             TextUser.Name = "TextUser";
             TextUser.Size = new Size(151, 28);
-            TextUser.TabIndex = 7;
-            // 
-            // TextNama
-            // 
-            TextNama.Location = new Point(142, 80);
-            TextNama.Name = "TextNama";
-            TextNama.Size = new Size(151, 28);
-            TextNama.TabIndex = 8;
-            TextNama.KeyPress += TextNama_KeyPress;
+            TextUser.TabIndex = 8;
+            TextUser.KeyPress += TextNama_KeyPress;
             // 
             // TextPassword
             // 
@@ -201,6 +201,7 @@
             ComboRole.Name = "ComboRole";
             ComboRole.Size = new Size(151, 28);
             ComboRole.TabIndex = 12;
+            ComboRole.SelectedIndexChanged += ComboRole_SelectedIndexChanged;
             ComboRole.KeyPress += ComboRole_KeyPress;
             // 
             // BtnTambah
@@ -211,6 +212,7 @@
             BtnTambah.TabIndex = 13;
             BtnTambah.Text = "Tambah";
             BtnTambah.UseVisualStyleBackColor = true;
+            BtnTambah.Click += BtnTambah_Click;
             // 
             // BtnSimpan
             // 
@@ -220,6 +222,7 @@
             BtnSimpan.TabIndex = 14;
             BtnSimpan.Text = "Simpan";
             BtnSimpan.UseVisualStyleBackColor = true;
+            BtnSimpan.Click += BtnSimpan_Click;
             // 
             // BtnUbah
             // 
@@ -229,6 +232,7 @@
             BtnUbah.TabIndex = 15;
             BtnUbah.Text = "Ubah";
             BtnUbah.UseVisualStyleBackColor = true;
+            BtnUbah.Click += BtnUbah_Click;
             // 
             // BtnBack
             // 
@@ -238,68 +242,20 @@
             BtnBack.TabIndex = 16;
             BtnBack.Text = "Back";
             BtnBack.UseVisualStyleBackColor = true;
+            BtnBack.Click += BtnBack_Click;
             // 
-            // dataGridView1
+            // Data_User
             // 
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { User, Nama, Password, Pegawai, Gudang, Role, Hapus });
-            dataGridView1.Location = new Point(11, 440);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.RowHeadersWidth = 51;
-            dataGridView1.RowTemplate.Height = 29;
-            dataGridView1.Size = new Size(1901, 603);
-            dataGridView1.TabIndex = 17;
-            // 
-            // User
-            // 
-            User.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            User.HeaderText = "Id User";
-            User.MinimumWidth = 6;
-            User.Name = "User";
-            // 
-            // Nama
-            // 
-            Nama.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Nama.HeaderText = "UserName";
-            Nama.MinimumWidth = 6;
-            Nama.Name = "Nama";
-            // 
-            // Password
-            // 
-            Password.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Password.HeaderText = "Password";
-            Password.MinimumWidth = 6;
-            Password.Name = "Password";
-            // 
-            // Pegawai
-            // 
-            Pegawai.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Pegawai.HeaderText = "Nama Pegawai";
-            Pegawai.MinimumWidth = 6;
-            Pegawai.Name = "Pegawai";
-            // 
-            // Gudang
-            // 
-            Gudang.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Gudang.HeaderText = "Nama Gudang";
-            Gudang.MinimumWidth = 6;
-            Gudang.Name = "Gudang";
-            // 
-            // Role
-            // 
-            Role.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Role.HeaderText = "Nama Role";
-            Role.MinimumWidth = 6;
-            Role.Name = "Role";
-            // 
-            // Hapus
-            // 
-            Hapus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Hapus.HeaderText = "";
-            Hapus.MinimumWidth = 6;
-            Hapus.Name = "Hapus";
-            Hapus.Text = "Hapus";
-            Hapus.UseColumnTextForButtonValue = true;
+            Data_User.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            Data_User.Columns.AddRange(new DataGridViewColumn[] { Id, User, Password, Pegawai, Gudang, Role, Hapus });
+            Data_User.Location = new Point(11, 440);
+            Data_User.Name = "Data_User";
+            Data_User.RowHeadersWidth = 51;
+            Data_User.RowTemplate.Height = 29;
+            Data_User.Size = new Size(1901, 603);
+            Data_User.TabIndex = 17;
+            Data_User.CellClick += Data_User_CellClick;
+            Data_User.CellContentClick += Data_User_CellContentClick;
             // 
             // TextPegawai
             // 
@@ -355,6 +311,57 @@
             TextRole.Size = new Size(151, 28);
             TextRole.TabIndex = 23;
             // 
+            // Id
+            // 
+            Id.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Id.HeaderText = "Id User";
+            Id.MinimumWidth = 6;
+            Id.Name = "Id";
+            // 
+            // User
+            // 
+            User.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            User.HeaderText = "UserName";
+            User.MinimumWidth = 6;
+            User.Name = "User";
+            // 
+            // Password
+            // 
+            Password.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Password.HeaderText = "Password";
+            Password.MinimumWidth = 6;
+            Password.Name = "Password";
+            // 
+            // Pegawai
+            // 
+            Pegawai.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Pegawai.HeaderText = "Nama Pegawai";
+            Pegawai.MinimumWidth = 6;
+            Pegawai.Name = "Pegawai";
+            // 
+            // Gudang
+            // 
+            Gudang.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Gudang.HeaderText = "Nama Gudang";
+            Gudang.MinimumWidth = 6;
+            Gudang.Name = "Gudang";
+            // 
+            // Role
+            // 
+            Role.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Role.HeaderText = "Nama Role";
+            Role.MinimumWidth = 6;
+            Role.Name = "Role";
+            // 
+            // Hapus
+            // 
+            Hapus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Hapus.HeaderText = "";
+            Hapus.MinimumWidth = 6;
+            Hapus.Name = "Hapus";
+            Hapus.Text = "Hapus";
+            Hapus.UseColumnTextForButtonValue = true;
+            // 
             // DataUser
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
@@ -367,7 +374,7 @@
             Controls.Add(TextGudang);
             Controls.Add(label8);
             Controls.Add(TextPegawai);
-            Controls.Add(dataGridView1);
+            Controls.Add(Data_User);
             Controls.Add(BtnBack);
             Controls.Add(BtnUbah);
             Controls.Add(BtnSimpan);
@@ -376,8 +383,8 @@
             Controls.Add(ComboGudang);
             Controls.Add(ComboPegawai);
             Controls.Add(TextPassword);
-            Controls.Add(TextNama);
             Controls.Add(TextUser);
+            Controls.Add(TextId);
             Controls.Add(label7);
             Controls.Add(label6);
             Controls.Add(label5);
@@ -389,9 +396,11 @@
             Margin = new Padding(4, 3, 4, 3);
             Name = "DataUser";
             Text = "DataUser";
+            FormClosing += DataUser_FormClosing;
+            Load += DataUser_Load;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)Data_User).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -406,8 +415,8 @@
         private Label label5;
         private Label label6;
         private Label label7;
+        private TextBox TextId;
         private TextBox TextUser;
-        private TextBox TextNama;
         private TextBox TextPassword;
         private ComboBox ComboPegawai;
         private ComboBox ComboGudang;
@@ -416,19 +425,19 @@
         private Button BtnSimpan;
         private Button BtnUbah;
         private Button BtnBack;
-        private DataGridView dataGridView1;
-        private DataGridViewTextBoxColumn User;
-        private DataGridViewTextBoxColumn Nama;
-        private DataGridViewTextBoxColumn Password;
-        private DataGridViewTextBoxColumn Pegawai;
-        private DataGridViewTextBoxColumn Gudang;
-        private DataGridViewTextBoxColumn Role;
-        private DataGridViewButtonColumn Hapus;
+        private DataGridView Data_User;
         private TextBox TextPegawai;
         private Label label8;
         private TextBox TextGudang;
         private Label label9;
         private Label label10;
         private TextBox TextRole;
+        private DataGridViewTextBoxColumn Id;
+        private DataGridViewTextBoxColumn User;
+        private DataGridViewTextBoxColumn Password;
+        private DataGridViewTextBoxColumn Pegawai;
+        private DataGridViewTextBoxColumn Gudang;
+        private DataGridViewTextBoxColumn Role;
+        private DataGridViewButtonColumn Hapus;
     }
 }
