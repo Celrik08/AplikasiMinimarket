@@ -16,13 +16,15 @@ namespace AplikasiMinimarket
 {
     public partial class DataUser : Form
     {
-        //private int roleId;
+        private int roleId;
+        private string loggedInUsername;
+        private string loggedUserId;
         private int selectedRowIndex = -1;
         private bool isTambahMode = true;
-        public DataUser()
+        public DataUser(int roleId)
         {
             InitializeComponent();
-            // this.roleId = roleId;
+            this.roleId = roleId;
         }
 
         private void PerfromPegawai()
@@ -243,21 +245,6 @@ namespace AplikasiMinimarket
             return exists;
         }
 
-        private bool IsPasswordExists(string hashedPassword, string salt)
-        {
-            bool exists = false;
-            Connect.conn.Open();
-            using (SqlCommand cmd = Connect.conn.CreateCommand())
-            {
-                cmd.CommandText = "SELECT COUNT (*) FROM tb_user WHERE password = @password AND salt = @salt";
-                cmd.Parameters.AddWithValue("@password", hashedPassword);
-                cmd.Parameters.AddWithValue("@salt", salt);
-                exists = (int)cmd.ExecuteScalar() > 0;
-            }
-            Connect.conn.Close();
-            return exists;
-        }
-
         private bool IsFormValid()
         {
             if (string.IsNullOrWhiteSpace(TextUser.Text) ||
@@ -288,9 +275,9 @@ namespace AplikasiMinimarket
             string hashedPassword = HashPassword(password, salt);
 
             // Cek apakah username sudah ada
-            if (IsUsernameExists(username) || IsPasswordExists(hashedPassword, salt))
+            if (IsUsernameExists(username))
             {
-                MessageBox.Show("Username atau password sudah ada. Silahkan pilih username dan password lain.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Username sudah ada. Silahkan pilih username lain.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -544,20 +531,6 @@ namespace AplikasiMinimarket
             return currentUsername;
         }
 
-        private string GetCurrentPassword(string id)
-        {
-            string currentPassword = null;
-            Connect.conn.Open();
-            using (SqlCommand cmd = Connect.conn.CreateCommand())
-            {
-                cmd.CommandText = "SELECT password FROM tb_user WHERE id_user = @id_user";
-                cmd.Parameters.AddWithValue("@id_user", id);
-                currentPassword = cmd.ExecuteScalar()?.ToString();
-            }
-            Connect.conn.Close();
-            return currentPassword;
-        }
-
         private void BtnUbah_Click(object sender, EventArgs e)
         {
             if (selectedRowIndex < 0)
@@ -594,9 +567,9 @@ namespace AplikasiMinimarket
             string hashedPassword = HashPassword(password, salt);
 
             // Cek apakah username dan password sudah ada (kecuali untuk pengguna yang sama)
-            if (IsUsernameExists(username) && username != GetCurrentUsername(id) || IsPasswordExists(hashedPassword, salt) && hashedPassword != GetCurrentPassword(id))
+            if (IsUsernameExists(username) && username != GetCurrentUsername(id))
             {
-                MessageBox.Show("Username atau password sudah ada. Silahkan pilih username dan password lain.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Username sudah ada. Silahkan pilih username lain.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -698,7 +671,9 @@ namespace AplikasiMinimarket
 
         private void BtnBack_Click(object sender, EventArgs e)
         {
-
+            MenuUtama MU = new MenuUtama(roleId, loggedInUsername, loggedUserId);
+            MU.Show();
+            Hide();
         }
 
         private void EnableDeleteColumn(bool enable)
