@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AplikasiMinimarket
 {
-    internal class Connect
+    public class Connect
     {
         public static SqlConnection conn = new SqlConnection(@"Data Source=MSI\SQLEXPRESS;Initial Catalog=db_minimarket1;Integrated Security=True");
         public static SqlCommand cmd;

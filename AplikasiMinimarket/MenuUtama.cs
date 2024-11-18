@@ -86,18 +86,33 @@ namespace AplikasiMinimarket
             }
         }
 
-        private void DataUser_Click(object sender, EventArgs e)
+        private void Back_Click(object sender, EventArgs e)
+        {
+            FormLogin FL = new FormLogin();
+            FL.Show();
+            Hide();
+        }
+
+        private void DataLogin_Click(object sender, EventArgs e)
         {
             DataUser DU = new DataUser(roleId);
             DU.Show();
             Hide();
         }
 
-        private void Back_Click(object sender, EventArgs e)
+        private void DataGudang_Click(object sender, EventArgs e)
         {
-            FormLogin FL = new FormLogin();
-            FL.Show();
+            DataGudang DG = new DataGudang();
+            DG.Show();
             Hide();
+        }
+
+        private void Transaksi_Click(object sender, EventArgs e)
+        {
+            DataTransaksi DT = new DataTransaksi(roleId, loggedInUsername, loggedInUserId);
+            DT.Show();
+            Hide();
+
         }
     }
 }

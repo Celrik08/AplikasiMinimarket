@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,11 +17,16 @@ namespace AplikasiMinimarket
 {
     public partial class DataUser : Form
     {
+        private List<Pegawai> pegawais = new List<Pegawai>(); // Menyimpan daftar anggota untuk pencarian
+        private List<Gudang> gudangs = new List<Gudang>(); // Menyimpan daftar anggota untuk pencarian
+        private List<Role> roles = new List<Role>(); // Menyimpan daftar anggota untuk pencarian
         private int roleId;
         private string loggedInUsername;
         private string loggedUserId;
         private int selectedRowIndex = -1;
         private bool isTambahMode = true;
+        private bool isHandlingTextChanged = false; // Flag untuk menghindari loop rekursif
+        private bool isSaveButtonClicked = false; // Flag untuk menandakan jika tombol simpan sudah ditekan
         public DataUser(int roleId)
         {
             InitializeComponent();
@@ -30,6 +36,7 @@ namespace AplikasiMinimarket
         private void PerfromPegawai()
         {
             ComboPegawai.Items.Clear();
+            pegawais.Clear();
 
             using (SqlCommand cmd = new SqlCommand("SELECT id_pegawai, nama_pegawai FROM tb_pegawai", Connect.conn))
             {
@@ -42,6 +49,7 @@ namespace AplikasiMinimarket
                         IdPegawai = (int)reader["id_pegawai"],
                         NamaPegawai = reader["nama_pegawai"].ToString()
                     };
+                    pegawais.Add(pegawai);
                     ComboPegawai.Items.Add(pegawai);
 
                 }
@@ -50,28 +58,10 @@ namespace AplikasiMinimarket
             }
         }
 
-        private void ComboPegawai_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ComboPegawai.SelectedItem is Pegawai selectedPegawai)
-            {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM tb_pegawai WHERE id_pegawai = @id_pegawai", Connect.conn))
-                {
-                    cmd.Parameters.AddWithValue("@id_pegawai", selectedPegawai.IdPegawai);
-                    Connect.conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        TextPegawai.Text = reader["nama_pegawai"].ToString();
-                    }
-                    reader.Close();
-                    Connect.conn.Close();
-                }
-            }
-        }
-
         private void PerfromGudang()
         {
             ComboGudang.Items.Clear();
+            gudangs.Clear();
 
             using (SqlCommand cmd = new SqlCommand("SELECT id_gudang, nama_gudang FROM tb_gudang", Connect.conn))
             {
@@ -84,6 +74,7 @@ namespace AplikasiMinimarket
                         IdGudang = (int)reader["id_gudang"],
                         NamaGudang = reader["nama_gudang"].ToString()
                     };
+                    gudangs.Add(gudang);
                     ComboGudang.Items.Add(gudang);
 
                 }
@@ -92,28 +83,10 @@ namespace AplikasiMinimarket
             }
         }
 
-        private void ComboGudang_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ComboGudang.SelectedItem is Gudang selectedGudang)
-            {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM tb_gudang WHERE id_gudang = @id_gudang", Connect.conn))
-                {
-                    cmd.Parameters.AddWithValue("@id_gudang", selectedGudang.IdGudang);
-                    Connect.conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        TextGudang.Text = reader["nama_gudang"].ToString();
-                    }
-                    reader.Close();
-                    Connect.conn.Close();
-                }
-            }
-        }
-
         private void PerfromRole()
         {
             ComboRole.Items.Clear();
+            roles.Clear();
 
             using (SqlCommand cmd = new SqlCommand("SELECT id_role, nama_role FROM tb_role", Connect.conn))
             {
@@ -126,6 +99,7 @@ namespace AplikasiMinimarket
                         IdRole = (int)reader["id_role"],
                         NamaRole = reader["nama_role"].ToString()
                     };
+                    roles.Add(role);
                     ComboRole.Items.Add(role);
                 }
                 reader.Close();
@@ -133,27 +107,151 @@ namespace AplikasiMinimarket
             }
         }
 
-        private void ComboRole_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboPegawai_TextChanged(object sender, EventArgs e)
         {
-            // Pastikan ComboRole.SelectedItem adalah Role dan bukan Gudang
-            if (ComboRole.SelectedItem is Role selectedRole)
+            // Cegah event handler dari pemanggilan berulang saat tombol simpan ditekan
+            if (isHandlingTextChanged || isSaveButtonClicked) return;
+
+            // Aktifkan flag untuk mencegah rekursi
+            isHandlingTextChanged = true;
+
+            // Ambil posisi kursor saat ini
+            int cursorPosition = ComboPegawai.SelectionStart;
+
+            // Dapatkan teks yang input pengguna saat ini
+            string currentText = ComboPegawai.Text;
+
+            // Filter daftar pegawai berdasarkan nama_pegawai yang sesuai dengan teks pencarian
+            var filteredPegawais = pegawais.FindAll(p =>
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT nama_role FROM tb_role WHERE id_role = @id_role", Connect.conn))
-                {
-                    cmd.Parameters.AddWithValue("@id_role", selectedRole.IdRole);
-                    Connect.conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        TextRole.Text = reader["nama_role"].ToString();
-                    }
-                    reader.Close();
-                    Connect.conn.Close();
-                }
+                // Pisahkan nama pegawai menjadi array kata-kata
+                var nameParts = p.NamaPegawai.Split(' ');
+                // Periksa apakah salah satu bagian dari nama cocok dengan teks input
+                return nameParts.Any(part => part.ToUpper().Contains(currentText.ToUpper()));
+            });
+
+            // Cek jika ada satu hasil yang sepenuhnya cocok dengan teks input pengguna
+            if (filteredPegawais.Count == 1 &&
+                filteredPegawais[0].NamaPegawai.Equals(currentText, StringComparison.OrdinalIgnoreCase))
+            {
+                // Jika hasilnya satu dan teksnya cocok sepenuhnya, jangan tampilkan dropdown lagi
+                ComboPegawai.DroppedDown = false;
             }
+            else
+            {
+                // Kosongkan ComboBox dan isi ulang dengan hasil filter
+                ComboPegawai.Items.Clear();
+                foreach (var pegawai in filteredPegawais)
+                {
+                    ComboPegawai.Items.Add(pegawai);
+                }
+
+                // Tampilkan kembali dropdown secara otomatis
+                ComboPegawai.DroppedDown = true;
+            }
+
+            // Tampilkan kembali teks pencarian dan arahkan kursor ke posisi sebelumnya
+            ComboPegawai.Text = currentText;
+            ComboPegawai.SelectionStart = cursorPosition;
+
+            // Matikan flag setelah operasi selesai
+            isHandlingTextChanged = false;
         }
 
-        private void TextNama_KeyPress(object sender, KeyPressEventArgs e)
+        private void ComboGudang_TextChanged(object sender, EventArgs e)
+        {
+            // Cegah event handler dari pemanggilan berulang saat tombol simpan ditekan
+            if (isHandlingTextChanged || isSaveButtonClicked) return;
+
+            // Aktifkan flag untuk mencegah rekursi
+            isHandlingTextChanged = true;
+
+            // Ambil posisi kursor saat ini
+            int cursorPosition = ComboGudang.SelectionStart;
+
+            // Dapatkan teks yang input pengguna saat ini
+            string currentText = ComboGudang.Text;
+
+            // Filter daftar gudang berdasarkan nama_gudang yang sesuai dengan teks pencarian
+            var filteredGudangs = gudangs.FindAll(g =>
+                g.NamaGudang.ToUpper().Contains(currentText.ToUpper()));
+
+            // Cek jika ada satu hasil yang sepenuhnya cocok dengan teks input pengguna
+            if (filteredGudangs.Count == 1 &&
+                filteredGudangs[0].NamaGudang.Equals(currentText, StringComparison.OrdinalIgnoreCase))
+            {
+                // Jika hasilnya satu dan teksnya cocok sepenuhnya, jangan tampilkan dropdown lagi
+                ComboGudang.DroppedDown = false;
+            }
+            else
+            {
+                // Kosongkan ComboBox dan isi ulang dengan hasil filter
+                ComboGudang.Items.Clear();
+                foreach (var gudang in filteredGudangs)
+                {
+                    ComboGudang.Items.Add(gudang);
+                }
+
+                // Tampilkan kembali dropdown secara otomatis
+                ComboGudang.DroppedDown = true;
+            }
+
+            // Tampilkan kembali teks pencarian dan arahkan kursor ke posisi sebelumnya
+            ComboGudang.Text = currentText;
+            ComboGudang.SelectionStart = cursorPosition;
+
+            // Matikan flag setelah operasi selesai
+            isHandlingTextChanged = false;
+        }
+
+
+        private void ComboRole_TextChanged(object sender, EventArgs e)
+        {
+            // Cegah event handler dari pemanggilan berulang saat tombol simpan ditekan
+            if (isHandlingTextChanged || isSaveButtonClicked) return;
+
+            // Aktifkan flag untuk mencegah rekursi
+            isHandlingTextChanged = true;
+
+            // Ambil posisi kursor saat ini
+            int cursorPosition = ComboRole.SelectionStart;
+
+            // Dapatkan teks yang input pengguna saat ini
+            string currentText = ComboRole.Text;
+
+            // Filter daftar role berdasarkan nama_role yang sesuai dengan teks pencarian
+            var filteredRoles = roles.FindAll(r =>
+                r.NamaRole.ToUpper().Contains(currentText.ToUpper()));
+
+            // Cek jika ada satu hasil yang sepenuhnya cocok dengan teks input pengguna
+            if (filteredRoles.Count == 1 &&
+                filteredRoles[0].NamaRole.Equals(currentText, StringComparison.OrdinalIgnoreCase))
+            {
+                // Jika hasilnya satu dan teksnya cocok sepenuhnya, jangan tampilkan dropdown lagi
+                ComboRole.DroppedDown = false;
+            }
+            else
+            {
+                // Kosongkan ComboBox dan isi ulang dengan hasil filter
+                ComboRole.Items.Clear();
+                foreach (var role in filteredRoles)
+                {
+                    ComboRole.Items.Add(role);
+                }
+
+                // Tampilkan kembali dropdown secara otomatis
+                ComboRole.DroppedDown = true;
+            }
+
+            // Tampilkan kembali teks pencarian dan arahkan kursor ke posisi sebelumnya
+            ComboRole.Text = currentText;
+            ComboRole.SelectionStart = cursorPosition;
+
+            // Matikan flag setelah operasi selesai
+            isHandlingTextChanged = false;
+        }
+
+        private void TextUser_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
             {
@@ -193,14 +291,22 @@ namespace AplikasiMinimarket
         {
             if (e.KeyChar == (char)13)
             {
+                isSaveButtonClicked = true;
                 e.Handled = true;
                 PerfromUser();
+                isSaveButtonClicked = false;
             }
         }
 
         private void BtnSimpan_Click(object sender, EventArgs e)
         {
+            // Tandai bahwa tombol simpan sudah ditekan
+            isSaveButtonClicked = true;
+
             PerfromUser();
+
+            // Setelah selesai, nonaktifkan flag isSaveButtonClicked
+            isSaveButtonClicked = false;
         }
 
         private string GenerateSalt()
@@ -312,11 +418,8 @@ namespace AplikasiMinimarket
             TextUser.Clear();
             TextPassword.Clear();
             ComboPegawai.SelectedIndex = -1;
-            TextPegawai.Clear();
             ComboGudang.SelectedIndex = -1;
-            TextGudang.Clear();
             ComboRole.SelectedIndex = -1;
-            TextRole.Clear();
 
             BtnSimpan.Enabled = false;
 
@@ -416,9 +519,6 @@ namespace AplikasiMinimarket
                 {
                     string namaPegawai = Data_User.Rows[selectedRowIndex].Cells[3].Value.ToString();
 
-                    // Tampilkan nama_pegawai di TextBox
-                    TextPegawai.Text = namaPegawai;
-
                     // Tampilkan semua pegawai di ComboBox
                     ComboPegawai.Items.Clear();
                     Connect.conn.Open();
@@ -440,16 +540,12 @@ namespace AplikasiMinimarket
                 else
                 {
                     ComboPegawai.SelectedIndex = -1;
-                    TextPegawai.Text = string.Empty;
                 }
 
                 // Ambil id_gudang dari kolom 5 dan cari nama_gudang
                 if (Data_User.Rows[selectedRowIndex].Cells[4].Value != null)
                 {
                     string namaGudang = Data_User.Rows[selectedRowIndex].Cells[4].Value.ToString();
-
-                    // Tampilkan nama_gudang di TextBox
-                    TextGudang.Text = namaGudang;
 
                     // Tampilkan semua gudang di ComboBox
                     ComboGudang.Items.Clear();
@@ -472,16 +568,12 @@ namespace AplikasiMinimarket
                 else
                 {
                     ComboGudang.SelectedIndex = -1;
-                    TextGudang.Text = string.Empty;
                 }
 
                 // Ambil id_role dari kolom 6 dan cari nama_role
                 if (Data_User.Rows[selectedRowIndex].Cells[5].Value != null)
                 {
                     string namaRole = Data_User.Rows[selectedRowIndex].Cells[5].Value.ToString();
-
-                    // Tampilkan nama_role di TextBox
-                    TextRole.Text = namaRole;
 
                     // Tampilkan semua role di ComboBox
                     ComboRole.Items.Clear();
@@ -504,7 +596,6 @@ namespace AplikasiMinimarket
                 else
                 {
                     ComboRole.SelectedIndex = -1;
-                    TextRole.Text = string.Empty;
                 }
 
 
@@ -533,9 +624,14 @@ namespace AplikasiMinimarket
 
         private void BtnUbah_Click(object sender, EventArgs e)
         {
+            // Tandai bahwa tombol simpan sudah ditekan
+            isSaveButtonClicked = true;
+
             if (selectedRowIndex < 0)
             {
                 MessageBox.Show("Pilih baris yang ingin diubah", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Nonaktifkan flag isSaveButtonClicked
+                isSaveButtonClicked = false;
                 return;
             }
 
@@ -555,6 +651,8 @@ namespace AplikasiMinimarket
                 selectedRole == null)
             {
                 MessageBox.Show("Semua kolom harus diisi, termasuk memilih pegawai, gudang, dan role", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Nonaktifkan flag isSaveButtonClicked
+                isSaveButtonClicked = false;
                 return;
             }
 
@@ -570,6 +668,8 @@ namespace AplikasiMinimarket
             if (IsUsernameExists(username) && username != GetCurrentUsername(id))
             {
                 MessageBox.Show("Username sudah ada. Silahkan pilih username lain.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Nonaktifkan flag isSaveButtonClicked
+                isSaveButtonClicked = false;
                 return;
             }
 
@@ -596,11 +696,8 @@ namespace AplikasiMinimarket
             TextUser.Clear();
             TextPassword.Clear();
             ComboPegawai.SelectedIndex = -1;
-            TextPegawai.Clear();
             ComboGudang.SelectedIndex = -1;
-            TextGudang.Clear();
             ComboRole.SelectedIndex = -1;
-            TextRole.Clear();
 
             // Reset tombol Simpan dan Ubah
             BtnSimpan.Enabled = true;
@@ -610,17 +707,30 @@ namespace AplikasiMinimarket
 
             // Muat ulang data ke DataGridView
             LoadDataToDataGridView();
+
+            // Nonaktifkan flag isSaveButtonClicked
+            isSaveButtonClicked = false;
         }
 
         private void Data_User_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == Data_User.Columns["Hapus"].Index && e.RowIndex >= 0)
             {
+                // Cek apakah proses sedang berjalan
+                if (isSaveButtonClicked)
+                {
+                    MessageBox.Show("Proses sedang berjalan. Mohon tunggu.", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 // Tampilkan dialog konfirmasi
                 DialogResult result = MessageBox.Show("Anda yakin ingin menghapus data ini?", "Konfirmasi Hapus", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                 if (result == DialogResult.Yes)
                 {
+                    // Tandai bahwa tombol hapus sudah ditekan
+                    isSaveButtonClicked = true;
+
                     // Ambil data dari kolom yang sesuai
                     string id = Data_User.Rows[e.RowIndex].Cells["Id"].Value?.ToString();
 
@@ -643,11 +753,8 @@ namespace AplikasiMinimarket
                         TextUser.Clear();
                         TextPassword.Clear();
                         ComboPegawai.SelectedIndex = -1;
-                        TextPegawai.Clear();
                         ComboGudang.SelectedIndex = -1;
-                        TextGudang.Clear();
                         ComboRole.SelectedIndex = -1;
-                        TextRole.Clear();
 
                         // Reset tombol Simpan dan Ubah
                         BtnSimpan.Enabled = true;
@@ -661,6 +768,9 @@ namespace AplikasiMinimarket
                     {
                         MessageBox.Show("ID pengguna tidak ditemukan", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+
+                    // Nonaktifkan flag setelah proses selesai
+                    isSaveButtonClicked = false;
                 }
                 else
                 {
@@ -698,11 +808,8 @@ namespace AplikasiMinimarket
             TextUser.Clear();
             TextPassword.Clear();
             ComboPegawai.SelectedIndex = -1;
-            TextPegawai.Clear();
             ComboGudang.SelectedIndex = -1;
-            TextGudang.Clear();
             ComboRole.SelectedIndex = -1;
-            TextRole.Clear();
 
             TextUser.Enabled = true;
             TextPassword.Enabled = true;
@@ -721,11 +828,8 @@ namespace AplikasiMinimarket
             TextUser.Enabled = false;
             TextPassword.Enabled = false;
             ComboPegawai.Enabled = false;
-            TextPegawai.Enabled = false;
             ComboGudang.Enabled = false;
-            TextGudang.Enabled = false;
             ComboRole.Enabled = false;
-            TextRole.Enabled = false;
 
             BtnSimpan.Enabled = false;
             BtnUbah.Enabled = false;

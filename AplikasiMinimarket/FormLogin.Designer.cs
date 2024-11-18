@@ -34,14 +34,13 @@
             TextUser = new TextBox();
             TextPassword = new TextBox();
             BtnKlik = new Button();
-            BtnLogout = new Button();
             CheckPassword = new CheckBox();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Times New Roman", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            label1.Font = new Font("Times New Roman", 12F, FontStyle.Bold);
             label1.ForeColor = Color.Cornsilk;
             label1.Location = new Point(144, 19);
             label1.Margin = new Padding(4, 0, 4, 0);
@@ -92,7 +91,7 @@
             // 
             // BtnKlik
             // 
-            BtnKlik.Location = new Point(13, 181);
+            BtnKlik.Location = new Point(250, 139);
             BtnKlik.Margin = new Padding(4, 3, 4, 3);
             BtnKlik.Name = "BtnKlik";
             BtnKlik.Size = new Size(84, 29);
@@ -100,17 +99,6 @@
             BtnKlik.Text = "Klik";
             BtnKlik.UseVisualStyleBackColor = true;
             BtnKlik.Click += BtnKlik_Click;
-            // 
-            // BtnLogout
-            // 
-            BtnLogout.Location = new Point(256, 181);
-            BtnLogout.Margin = new Padding(4, 3, 4, 3);
-            BtnLogout.Name = "BtnLogout";
-            BtnLogout.Size = new Size(84, 29);
-            BtnLogout.TabIndex = 6;
-            BtnLogout.Text = "Logout";
-            BtnLogout.UseVisualStyleBackColor = true;
-            BtnLogout.Click += BtnLogout_Click;
             // 
             // CheckPassword
             // 
@@ -128,17 +116,16 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(0, 127, 255);
-            ClientSize = new Size(356, 244);
+            BackColor = Color.FromArgb(122, 178, 211);
+            ClientSize = new Size(356, 189);
             Controls.Add(CheckPassword);
-            Controls.Add(BtnLogout);
             Controls.Add(BtnKlik);
             Controls.Add(TextPassword);
             Controls.Add(TextUser);
             Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(label1);
-            Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            Font = new Font("Times New Roman", 10.8F);
             Margin = new Padding(4, 3, 4, 3);
             Name = "FormLogin";
             Text = "FormLogin";
@@ -155,7 +142,6 @@
         private TextBox TextUser;
         private TextBox TextPassword;
         private Button BtnKlik;
-        private Button BtnLogout;
         private CheckBox CheckPassword;
     }
 }

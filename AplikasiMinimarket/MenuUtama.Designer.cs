@@ -30,6 +30,14 @@
         {
             menuStrip1 = new MenuStrip();
             DataUser = new ToolStripMenuItem();
+            DataLogin = new ToolStripMenuItem();
+            DataPegawai = new ToolStripMenuItem();
+            DataRole = new ToolStripMenuItem();
+            DataTransaksi = new ToolStripMenuItem();
+            RiwayatTransaksi = new ToolStripMenuItem();
+            Transaksi = new ToolStripMenuItem();
+            DataGudang = new ToolStripMenuItem();
+            Back = new ToolStripMenuItem();
             label1 = new Label();
             User = new Label();
             Data_Barang = new DataGridView();
@@ -38,7 +46,6 @@
             Kategori = new DataGridViewTextBoxColumn();
             Harga = new DataGridViewTextBoxColumn();
             Total = new DataGridViewTextBoxColumn();
-            Back = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Data_Barang).BeginInit();
             SuspendLayout();
@@ -46,9 +53,9 @@
             // menuStrip1
             // 
             menuStrip1.BackColor = Color.Gray;
-            menuStrip1.Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            menuStrip1.Font = new Font("Times New Roman", 10.8F);
             menuStrip1.ImageScalingSize = new Size(20, 20);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { DataUser, Back });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { DataUser, DataTransaksi, DataGudang, Back });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(8, 2, 0, 2);
@@ -58,15 +65,68 @@
             // 
             // DataUser
             // 
+            DataUser.DropDownItems.AddRange(new ToolStripItem[] { DataLogin, DataPegawai, DataRole });
             DataUser.Name = "DataUser";
             DataUser.Size = new Size(96, 24);
             DataUser.Text = "Data User";
-            DataUser.Click += DataUser_Click;
+            // 
+            // DataLogin
+            // 
+            DataLogin.Name = "DataLogin";
+            DataLogin.Size = new Size(191, 26);
+            DataLogin.Text = "Data Login";
+            DataLogin.Click += DataLogin_Click;
+            // 
+            // DataPegawai
+            // 
+            DataPegawai.Name = "DataPegawai";
+            DataPegawai.Size = new Size(191, 26);
+            DataPegawai.Text = "Data Pegawai";
+            // 
+            // DataRole
+            // 
+            DataRole.Name = "DataRole";
+            DataRole.Size = new Size(191, 26);
+            DataRole.Text = "Data Role";
+            // 
+            // DataTransaksi
+            // 
+            DataTransaksi.DropDownItems.AddRange(new ToolStripItem[] { RiwayatTransaksi, Transaksi });
+            DataTransaksi.Name = "DataTransaksi";
+            DataTransaksi.Size = new Size(131, 24);
+            DataTransaksi.Text = "Data Transaksi";
+            // 
+            // RiwayatTransaksi
+            // 
+            RiwayatTransaksi.Name = "RiwayatTransaksi";
+            RiwayatTransaksi.Size = new Size(225, 26);
+            RiwayatTransaksi.Text = "Riwayat Transaksi";
+            // 
+            // Transaksi
+            // 
+            Transaksi.Name = "Transaksi";
+            Transaksi.Size = new Size(225, 26);
+            Transaksi.Text = "Tranaksi";
+            Transaksi.Click += Transaksi_Click;
+            // 
+            // DataGudang
+            // 
+            DataGudang.Name = "DataGudang";
+            DataGudang.Size = new Size(118, 24);
+            DataGudang.Text = "Data Gudang";
+            DataGudang.Click += DataGudang_Click;
+            // 
+            // Back
+            // 
+            Back.Name = "Back";
+            Back.Size = new Size(60, 24);
+            Back.Text = "Back";
+            Back.Click += Back_Click;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            label1.Font = new Font("Times New Roman", 12F);
             label1.ForeColor = Color.Cornsilk;
             label1.Location = new Point(927, 72);
             label1.Name = "label1";
@@ -77,7 +137,7 @@
             // User
             // 
             User.AutoSize = true;
-            User.Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            User.Font = new Font("Times New Roman", 12F);
             User.ForeColor = Color.Cornsilk;
             User.Location = new Point(964, 120);
             User.Name = "User";
@@ -92,7 +152,6 @@
             Data_Barang.Location = new Point(12, 160);
             Data_Barang.Name = "Data_Barang";
             Data_Barang.RowHeadersWidth = 51;
-            Data_Barang.RowTemplate.Height = 29;
             Data_Barang.Size = new Size(1900, 883);
             Data_Barang.TabIndex = 3;
             // 
@@ -131,24 +190,17 @@
             Total.MinimumWidth = 6;
             Total.Name = "Total";
             // 
-            // Back
-            // 
-            Back.Name = "Back";
-            Back.Size = new Size(60, 24);
-            Back.Text = "Back";
-            Back.Click += Back_Click;
-            // 
             // MenuUtama
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(0, 127, 255);
+            BackColor = Color.FromArgb(122, 178, 211);
             ClientSize = new Size(1924, 1055);
             Controls.Add(Data_Barang);
             Controls.Add(User);
             Controls.Add(label1);
             Controls.Add(menuStrip1);
-            Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point);
+            Font = new Font("Times New Roman", 10.8F);
             ForeColor = SystemColors.ControlText;
             MainMenuStrip = menuStrip1;
             Margin = new Padding(4, 3, 4, 3);
@@ -175,5 +227,12 @@
         private DataGridViewTextBoxColumn Harga;
         private DataGridViewTextBoxColumn Total;
         private ToolStripMenuItem Back;
+        private ToolStripMenuItem DataLogin;
+        private ToolStripMenuItem DataPegawai;
+        private ToolStripMenuItem DataTransaksi;
+        private ToolStripMenuItem RiwayatTransaksi;
+        private ToolStripMenuItem Transaksi;
+        private ToolStripMenuItem DataGudang;
+        private ToolStripMenuItem DataRole;
     }
 }

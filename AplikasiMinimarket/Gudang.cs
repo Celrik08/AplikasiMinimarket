@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace AplikasiMinimarket
 {
-    internal class Gudang
+    public class Gudang
     {
         public int IdGudang { get; set; }
         public string NamaGudang { get; set; }
 
         public override string ToString()
         {
-            return $"{IdGudang} - {NamaGudang}";
+            return NamaGudang;
         }
     }
 }
