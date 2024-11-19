@@ -22,7 +22,8 @@ namespace AplikasiMinimarket
         private string loggedInUserId;
         private int selectedRowIndex = -1;
         private System.Windows.Forms.Timer timer;
-
+        private bool isHandlingTextChanged = false; // Flag untuk menghindari loop rekrusif
+        private bool isSaveButtonClicked = false; // Flag untuk menandakan jika tombol simpan sudah ditekan
         public DataTransaksi(int roleId, string loggedInUsername, string loggedInUserId)
         {
             InitializeComponent();
@@ -94,7 +95,7 @@ namespace AplikasiMinimarket
                         NamaMember = reader["nama_member"].ToString()
                     };
                     members.Add(member);
-                    ComboMember.Items.Add(member);
+                    ComboMember.Items.Add(member); // Hanya menampilkan IdMember
                 }
                 reader.Close();
                 Connect.conn.Close();
@@ -103,50 +104,45 @@ namespace AplikasiMinimarket
 
         private void ComboMember_TextChanged(object sender, EventArgs e)
         {
-            // Dapatkan teks pencarian pengguna
-            string searchText = ComboMember.Text.ToLower();
+            if (isHandlingTextChanged || isSaveButtonClicked) return;
 
-            // Filter daftar member berdasarkan id_member atau nama_member yang sesuai dengan teks pencarian
+            isHandlingTextChanged = true;
+
+            int cursorPosition = ComboMember.SelectionStart;
+            string currentText = ComboMember.Text;
+
+            // Filter hanya berdasarkan IdMember
             var filteredMembers = members.FindAll(m =>
-                m.IdMember.ToLower().Contains(searchText) ||
-                m.NamaMember.ToLower().Contains(searchText));
+                m.IdMember.ToUpper().Contains(currentText.ToUpper()));
 
-            // Hentikan event handler sementara untuk menghindari masalah saat mengubah item ComboBox
-            ComboMember.TextChanged -= ComboMember_TextChanged;
-
-            // Kosongkan ComboBox dan isi ulang dengan hasil filter
-            ComboMember.Items.Clear();
-            foreach (var member in filteredMembers)
+            if (filteredMembers.Count == 1 &&
+                filteredMembers[0].IdMember.Equals(currentText, StringComparison.OrdinalIgnoreCase))
             {
-                ComboMember.Items.Add(member);
+                ComboMember.DroppedDown = false;
+            }
+            else
+            {
+                ComboMember.Items.Clear();
+                foreach (var member in filteredMembers)
+                {
+                    ComboMember.Items.Add(member); // Tetap menampilkan IdMember
+                }
+
+                ComboMember.DroppedDown = true;
             }
 
-            // Tampilkan kembali teks pencarian dan arahkan kursor ke akhir teks
-            ComboMember.DroppedDown = true; // Menampilkan dropdown secara otomatis
-            ComboMember.Text = searchText;
-            ComboMember.SelectionStart = searchText.Length;
+            ComboMember.Text = currentText;
+            ComboMember.SelectionStart = cursorPosition;
 
-            // Sambungkan kembali event handler
-            ComboMember.TextChanged += ComboMember_TextChanged;
+            isHandlingTextChanged = false;
         }
 
         private void ComboMember_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (ComboMember.SelectedItem is Member selectedMember)
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM tb_member WHERE id_member = @id_member", Connect.conn))
-                {
-                    cmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
-                    Connect.conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        TextMember.Text = reader["nama_member"].ToString();
-                        // Isi kolom data lain seperlunya
-                    }
-                    reader.Close();
-                    Connect.conn.Close();
-                }
+                // Menampilkan NamaMember di TextMember
+                TextMember.Text = selectedMember.NamaMember;
             }
         }
 
@@ -160,8 +156,6 @@ namespace AplikasiMinimarket
             // Panggil fungsi ini agar timer aktif
             InitializeTime(); // Panggil fungsi ini agar timer aktif
             PerformMember();
-            // Pasang event handler TextChanged untuk mendukung pencarian di ComboMember
-            ComboMember.TextChanged += ComboMember_TextChanged;
         }
     }
 }

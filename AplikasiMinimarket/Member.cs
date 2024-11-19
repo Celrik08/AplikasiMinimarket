@@ -13,7 +13,7 @@ namespace AplikasiMinimarket
 
         public override string ToString()
         {
-            return $"{IdMember} - {NamaMember}";
+            return $"{IdMember}";
         }
     }
 }
