@@ -148,7 +148,34 @@ namespace AplikasiMinimarket
 
         private void TextTotal1_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // Periksa jika tombol yang ditekan adalah Enter
+            if (e.KeyChar == (char)13) // Jika tekan Enter
+            {
+                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
 
+                // Ambil nilai dari TextHarga dan TextTotal1
+                string hargaText = TextHarga.Text;
+                string totalText = TextTotal1.Text;
+
+                // Menghapus "Rp." dan spasi dari harga
+                hargaText = hargaText.Replace("Rp. ", "").Replace(" ", "");
+
+                // Pastikan TextTotal1 berisi angka
+                if (decimal.TryParse(hargaText, out decimal harga) &&
+                    int.TryParse(totalText, out int jumlah))
+                {
+                    // Hitung total
+                    decimal totalHarga = harga * jumlah;
+
+                    // Tambahkan "Rp." ke hasil dan tampilkan di TextSub
+                    TextSub.Text = "Rp. " + totalHarga;
+                }
+                else
+                {
+                    // Jika input tidak valid, tampilkan pesan error atau reset TextSub
+                    TextSub.Text = "Input tidak valid!";
+                }
+            }
         }
 
         private void ComboMember_TextChanged(object sender, EventArgs e)
