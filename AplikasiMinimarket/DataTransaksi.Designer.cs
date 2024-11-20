@@ -52,7 +52,7 @@
             label8 = new Label();
             BtnSave = new Button();
             label9 = new Label();
-            ComoBarang = new ComboBox();
+            ComboBarang = new ComboBox();
             TextNama = new TextBox();
             label10 = new Label();
             TextHarga = new TextBox();
@@ -176,6 +176,7 @@
             ComboMember.TabIndex = 9;
             ComboMember.SelectedIndexChanged += ComboMember_SelectedIndexChanged;
             ComboMember.TextChanged += ComboMember_TextChanged;
+            ComboMember.KeyPress += ComboMember_KeyPress;
             // 
             // Data_Transaksi
             // 
@@ -286,13 +287,16 @@
             label9.TabIndex = 18;
             label9.Text = "Kode Barang";
             // 
-            // ComoBarang
+            // ComboBarang
             // 
-            ComoBarang.FormattingEnabled = true;
-            ComoBarang.Location = new Point(157, 185);
-            ComoBarang.Name = "ComoBarang";
-            ComoBarang.Size = new Size(193, 28);
-            ComoBarang.TabIndex = 22;
+            ComboBarang.FormattingEnabled = true;
+            ComboBarang.Location = new Point(157, 185);
+            ComboBarang.Name = "ComboBarang";
+            ComboBarang.Size = new Size(193, 28);
+            ComboBarang.TabIndex = 22;
+            ComboBarang.SelectedIndexChanged += ComboBarang_SelectedIndexChanged;
+            ComboBarang.TextChanged += ComboBarang_TextChanged;
+            ComboBarang.KeyPress += ComboBarang_KeyPress;
             // 
             // TextNama
             // 
@@ -334,6 +338,7 @@
             TextTotal1.Name = "TextTotal1";
             TextTotal1.Size = new Size(193, 28);
             TextTotal1.TabIndex = 28;
+            TextTotal1.KeyPress += TextTotal1_KeyPress;
             // 
             // label12
             // 
@@ -450,7 +455,7 @@
             Controls.Add(label11);
             Controls.Add(TextNama);
             Controls.Add(label10);
-            Controls.Add(ComoBarang);
+            Controls.Add(ComboBarang);
             Controls.Add(label9);
             Controls.Add(BtnSave);
             Controls.Add(TextTotal3);
@@ -508,7 +513,7 @@
         private Label label8;
         private Button BtnSave;
         private Label label9;
-        private ComboBox ComoBarang;
+        private ComboBox ComboBarang;
         private TextBox TextNama;
         private Label label10;
         private TextBox TextHarga;

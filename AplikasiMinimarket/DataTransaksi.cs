@@ -16,6 +16,7 @@ namespace AplikasiMinimarket
     public partial class DataTransaksi : Form
     {
         private List<Member> members = new List<Member>(); // Menyimpan daftar anggota untuk pencarian
+        private List<Barang> barangList = new List<Barang>(); // Menyimpan daftar barang untuk pencarian
         private long currentCount = 1;
         private int roleId;
         private string loggedInUsername;
@@ -102,6 +103,54 @@ namespace AplikasiMinimarket
             }
         }
 
+        private void PerformBarang()
+        {
+            ComboBarang.Items.Clear();
+            barangList.Clear();
+
+            using (SqlCommand cmd = new SqlCommand("SELECT id_barang, nama_barang, harga_satuan FROM tb_barang", Connect.conn))
+            {
+                Connect.conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Barang barang = new Barang
+                    {
+                        IdBarang = reader["id_barang"].ToString(),
+                        NamaBarang = reader["nama_barang"].ToString(),
+                        HargaBarang = (int)reader["harga_satuan"]
+                    };
+                    barangList.Add(barang);
+                    ComboBarang.Items.Add(barang.IdBarang); // Menampilkan id_barang di ComboBox
+                }
+                reader.Close();
+                Connect.conn.Close();
+            }
+        }
+
+        private void ComboMember_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true;
+                ComboBarang.Focus();
+            }
+        }
+
+        private void ComboBarang_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true;
+                TextTotal1.Focus();
+            }
+        }
+
+        private void TextTotal1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+
+        }
+
         private void ComboMember_TextChanged(object sender, EventArgs e)
         {
             if (isHandlingTextChanged || isSaveButtonClicked) return;
@@ -137,12 +186,71 @@ namespace AplikasiMinimarket
             isHandlingTextChanged = false;
         }
 
+
+        private void ComboBarang_TextChanged(object sender, EventArgs e)
+        {
+            if (isHandlingTextChanged || isSaveButtonClicked) return;
+
+            isHandlingTextChanged = true;
+
+            int cursorPosition = ComboBarang.SelectionStart;
+            string currentText = ComboBarang.Text;
+
+            var filteredBarangs = barangList.FindAll(b =>
+                b.IdBarang.ToUpper().Contains(currentText.ToUpper()) ||
+                b.NamaBarang.ToUpper().Contains(currentText.ToUpper()));
+
+            if (filteredBarangs.Count == 1 &&
+                (filteredBarangs[0].IdBarang.Equals(currentText, StringComparison.OrdinalIgnoreCase) ||
+                 filteredBarangs[0].NamaBarang.Equals(currentText, StringComparison.OrdinalIgnoreCase)))
+            {
+                ComboBarang.DroppedDown = false;
+            }
+            else
+            {
+                ComboBarang.Items.Clear();
+                foreach (var barang in filteredBarangs)
+                {
+                    ComboBarang.Items.Add(barang.IdBarang); // Tetap menampilkan id_barang
+                }
+                ComboBarang.DroppedDown = true;
+            }
+
+            ComboBarang.Text = currentText;
+            ComboBarang.SelectionStart = cursorPosition;
+
+            isHandlingTextChanged = false;
+        }
+
         private void ComboMember_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (isHandlingTextChanged || isSaveButtonClicked) return;
+
+            isHandlingTextChanged = true;
+
             if (ComboMember.SelectedItem is Member selectedMember)
             {
                 // Menampilkan NamaMember di TextMember
                 TextMember.Text = selectedMember.NamaMember;
+
+                // Menutup dropdown ComboMember setelah item dipilih
+                ComboMember.DroppedDown = false;
+            }
+
+            isHandlingTextChanged = false;
+        }
+
+
+        private void ComboBarang_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ComboBarang.SelectedItem is string selectedId)
+            {
+                var selectedBarang = barangList.Find(b => b.IdBarang == selectedId);
+                if (selectedBarang != null)
+                {
+                    TextNama.Text = selectedBarang.NamaBarang;
+                    TextHarga.Text = "Rp. " + selectedBarang.HargaBarang.ToString("N0", CultureInfo.InvariantCulture);
+                }
             }
         }
 
@@ -156,6 +264,7 @@ namespace AplikasiMinimarket
             // Panggil fungsi ini agar timer aktif
             InitializeTime(); // Panggil fungsi ini agar timer aktif
             PerformMember();
+            PerformBarang();
         }
     }
 }
