@@ -130,19 +130,26 @@ namespace AplikasiMinimarket
 
         private void ComboMember_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // Jika yang ditekan adalah tombol Enter
             if (e.KeyChar == (char)13)
             {
-                e.Handled = true;
-                ComboBarang.Focus();
+                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
+                ComboBarang.Focus(); // Berpindah ke ComboBarang
             }
         }
 
         private void ComboBarang_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // Jika yang ditekan adalah tombol Enter
             if (e.KeyChar == (char)13)
             {
-                e.Handled = true;
-                TextTotal1.Focus();
+                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
+                TextTotal1.Focus(); // Berpindah ke TextTotal1
+            }
+            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true; // Mencegah input selain angka dan kontrol
             }
         }
 
@@ -175,6 +182,11 @@ namespace AplikasiMinimarket
                     // Jika input tidak valid, tampilkan pesan error atau reset TextSub
                     TextSub.Text = "Input tidak valid!";
                 }
+            }
+            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true; // Mencegah input selain angka dan kontrol
             }
         }
 
