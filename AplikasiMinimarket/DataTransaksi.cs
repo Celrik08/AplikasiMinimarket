@@ -128,68 +128,6 @@ namespace AplikasiMinimarket
             }
         }
 
-        private void ComboMember_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Jika yang ditekan adalah tombol Enter
-            if (e.KeyChar == (char)13)
-            {
-                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
-                ComboBarang.Focus(); // Berpindah ke ComboBarang
-            }
-        }
-
-        private void ComboBarang_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Jika yang ditekan adalah tombol Enter
-            if (e.KeyChar == (char)13)
-            {
-                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
-                TextTotal1.Focus(); // Berpindah ke TextTotal1
-            }
-            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
-            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
-            {
-                e.Handled = true; // Mencegah input selain angka dan kontrol
-            }
-        }
-
-        private void TextTotal1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Periksa jika tombol yang ditekan adalah Enter
-            if (e.KeyChar == (char)13) // Jika tekan Enter
-            {
-                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
-
-                // Ambil nilai dari TextHarga dan TextTotal1
-                string hargaText = TextHarga.Text;
-                string totalText = TextTotal1.Text;
-
-                // Menghapus "Rp." dan spasi dari harga
-                hargaText = hargaText.Replace("Rp. ", "").Replace(" ", "");
-
-                // Pastikan TextTotal1 berisi angka
-                if (decimal.TryParse(hargaText, out decimal harga) &&
-                    int.TryParse(totalText, out int jumlah))
-                {
-                    // Hitung total
-                    decimal totalHarga = harga * jumlah;
-
-                    // Tambahkan "Rp." ke hasil dan tampilkan di TextSub
-                    TextSub.Text = "Rp. " + totalHarga;
-                }
-                else
-                {
-                    // Jika input tidak valid, tampilkan pesan error atau reset TextSub
-                    TextSub.Text = "Input tidak valid!";
-                }
-            }
-            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
-            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
-            {
-                e.Handled = true; // Mencegah input selain angka dan kontrol
-            }
-        }
-
         private void ComboMember_TextChanged(object sender, EventArgs e)
         {
             if (isHandlingTextChanged || isSaveButtonClicked) return;
@@ -293,6 +231,161 @@ namespace AplikasiMinimarket
             }
         }
 
+        private void ComboMember_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Jika yang ditekan adalah tombol Enter
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
+                ComboBarang.Focus(); // Berpindah ke ComboBarang
+            }
+        }
+
+        private void ComboBarang_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Jika yang ditekan adalah tombol Enter
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
+                TextTotal1.Focus(); // Berpindah ke TextTotal1
+            }
+            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true; // Mencegah input selain angka dan kontrol
+            }
+        }
+
+        private void TextTotal1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Periksa jika tombol yang ditekan adalah Enter
+            if (e.KeyChar == (char)13) // Jika tekan Enter
+            {
+                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
+
+                // Ambil nilai dari TextHarga dan TextTotal1
+                string hargaText = TextHarga.Text;
+                string totalText = TextTotal1.Text;
+
+                // Menghapus "Rp." dan spasi dari harga
+                hargaText = hargaText.Replace("Rp. ", "").Replace(" ", "");
+
+                // Pastikan TextTotal1 berisi angka
+                if (decimal.TryParse(hargaText, out decimal harga) &&
+                    int.TryParse(totalText, out int jumlah))
+                {
+                    // Hitung total
+                    decimal totalHarga = harga * jumlah;
+
+                    // Tambahkan "Rp." ke hasil dan tampilkan di TextSub
+                    TextSub.Text = "Rp. " + totalHarga;
+                }
+                else
+                {
+                    // Jika input tidak valid, tampilkan pesan error atau reset TextSub
+                    TextSub.Text = "Input tidak valid!";
+                }
+            }
+            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true; // Mencegah input selain angka dan kontrol
+            }
+        }
+
+
+        private void BtnKlik_Click(object sender, EventArgs e)
+        {
+            PerfromTransaksi();
+        }
+
+        private void PerfromTransaksi()
+        {
+            if (ComboMember.SelectedItem == null || ComboBarang.SelectedItem == null ||
+                string.IsNullOrWhiteSpace(TextTotal1.Text) || string.IsNullOrWhiteSpace(TextTotal2.Text))
+            {
+                MessageBox.Show("Id Member, Kode Barang, dan Total jangan di kosongin", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Member selectedMember = ComboMember.SelectedItem as Member;
+            string selectedBarangId = ComboBarang.SelectedItem as string;
+
+            if (selectedMember != null && selectedBarangId != null)
+            {
+                using (SqlCommand checkTransaksiCmd = new SqlCommand("SELECT COUNT(*) FROM tb_transaksi WHERE id_transaksi = @id_transaksi", Connect.conn))
+                {
+                    checkTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                    Connect.conn.Open();
+                    int count = (int)checkTransaksiCmd.ExecuteScalar();
+
+                    if (count == 0)
+                    {
+                        // Insert ke tabel tb_transaksi
+                        using (SqlCommand insertTransaksiCmd = new SqlCommand("INSERT INTO tb_transaksi (id_transaksi, tanggal_transaksi, id_user, grand_total, id_status_transaksi, id_member) VALUES (@id_transaksi, @tanggal_transaksi, @id_user, @grand_total, @id_status_transaksi, @id_member)", Connect.conn))
+                        {
+                            insertTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                            DateTime tanggalTransaksi = DateTime.ParseExact(TextTanggal.Text + " " + TextJam.Text, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                            insertTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
+                            insertTransaksiCmd.Parameters.AddWithValue("@id_user", loggedInUserId);
+
+                            // Menghapus "Rp." dan spasi sebelum memasukkan nilai ke database
+                            string grandTotalText = TextTotal2.Text.Replace("Rp. ", "").Replace(" ", "");
+                            insertTransaksiCmd.Parameters.AddWithValue("@grand_total", decimal.Parse(grandTotalText));
+                            insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
+                            insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
+                            insertTransaksiCmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    // Insert ke tabel tb_detail_transaksi
+                    using (SqlCommand insertDetailCmd = new SqlCommand("INSERT INTO tb_detail_transaksi (id_transaksi, id_barang, harga_satuan, qty, sub_total) VALUES (@id_transaksi, @id_barang, @harga_satuan, @qty, @sub_total)", Connect.conn))
+                    {
+                        insertDetailCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                        insertDetailCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+
+                        // Menghapus "Rp." dan spasi sebelum memasukkan nilai ke database
+                        string hargaSatuanText = TextHarga.Text.Replace("Rp. ", "").Replace(" ", "");
+                        insertDetailCmd.Parameters.AddWithValue("@harga_satuan", decimal.Parse(hargaSatuanText));
+
+                        insertDetailCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+
+                        // Menghapus "Rp." dan spasi dari sub_total sebelum menyimpannya
+                        string subTotalText = TextSub.Text.Replace("Rp. ", "").Replace(" ", "");
+                        insertDetailCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(subTotalText));
+
+                        insertDetailCmd.ExecuteNonQuery();
+                    }
+
+                    // Update stok di tb_buku
+                    using (SqlCommand updateCmd = new SqlCommand("UPDATE tb_barang SET total_stok = total_stok - @qty WHERE id_barang = @id_barang", Connect.conn))
+                    {
+                        updateCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+                        updateCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+                        updateCmd.ExecuteNonQuery();
+                    }
+
+                    // Reset komponen setelah transaksi
+                    LoadDataToDataGridView();
+                    ResetKomponen();
+                    Connect.conn.Close();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Mohon lengkapi semua data.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ResetKomponen()
+        {
+            ComboBarang.SelectedIndex = -1;
+            TextNama.Clear();
+            TextHarga.Clear();
+            TextTotal1.Clear();
+            TextSub.Clear();
+        }
+
         private void DataTransaksi_Load(object sender, EventArgs e)
         {
             noOtomatis();
@@ -303,7 +396,38 @@ namespace AplikasiMinimarket
             // Panggil fungsi ini agar timer aktif
             InitializeTime(); // Panggil fungsi ini agar timer aktif
             PerformMember();
+            TextUser.Text = $"{loggedInUserId} - {loggedInUsername}";
             PerformBarang();
+            TextTotal2.Text = "Rp. " + "0";
+            LoadDataToDataGridView();
+        }
+
+        private void LoadDataToDataGridView()
+        {
+            // Kosongkann DataGridView terlebih dahulu
+            Data_Transaksi.Rows.Clear();
+
+            // Tulis kueri SQL Anda untuk mengambil data dari nilai
+            string query = "SELECT tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, tb_detail_transaksi.sub_total " +
+                            "FROM tb_detail_transaksi " +
+                            "JOIN tb_barang ON tb_detail_transaksi.id_barang = tb_barang.id_barang";
+
+            // Buat SqlCommand untuk menjalankan kueri
+            using (SqlCommand cmd = new SqlCommand(query, Connect.conn))
+            {
+                Connect.conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string nama = reader["nama_barang"].ToString();
+                    string harga = reader["harga_satuan"].ToString();
+                    string qty = reader["qty"].ToString();
+                    string sub = reader["sub_total"].ToString();
+                    Data_Transaksi.Rows.Add(nama, harga, qty, sub);
+                }
+                reader.Close();
+                Connect.conn.Close();
+            }
         }
     }
 }

@@ -37,6 +37,7 @@
             dataGudangToolStripMenuItem1 = new ToolStripMenuItem();
             dataRiwayatGudangMasukToolStripMenuItem = new ToolStripMenuItem();
             dataGridView1 = new DataGridView();
+            label1 = new Label();
             Id = new DataGridViewTextBoxColumn();
             Nama = new DataGridViewTextBoxColumn();
             Satuan = new DataGridViewTextBoxColumn();
@@ -44,8 +45,6 @@
             Jumlah = new DataGridViewTextBoxColumn();
             Rak = new DataGridViewTextBoxColumn();
             Gudang = new DataGridViewTextBoxColumn();
-            Hapus = new DataGridViewButtonColumn();
-            label1 = new Label();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
@@ -110,13 +109,25 @@
             // dataGridView1
             // 
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Id, Nama, Satuan, Harga, Jumlah, Rak, Gudang, Hapus });
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Id, Nama, Satuan, Harga, Jumlah, Rak, Gudang });
             dataGridView1.Location = new Point(13, 115);
             dataGridView1.Margin = new Padding(4, 3, 4, 3);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 51;
             dataGridView1.Size = new Size(1898, 928);
             dataGridView1.TabIndex = 1;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.Cornsilk;
+            label1.Location = new Point(30, 60);
+            label1.Margin = new Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(174, 25);
+            label1.TabIndex = 2;
+            label1.Text = "Barang Gudang";
             // 
             // Id
             // 
@@ -167,27 +178,6 @@
             Gudang.MinimumWidth = 6;
             Gudang.Name = "Gudang";
             // 
-            // Hapus
-            // 
-            Hapus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Hapus.HeaderText = "";
-            Hapus.MinimumWidth = 6;
-            Hapus.Name = "Hapus";
-            Hapus.Text = "Hapus";
-            Hapus.UseColumnTextForButtonValue = true;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Times New Roman", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.Cornsilk;
-            label1.Location = new Point(30, 60);
-            label1.Margin = new Padding(4, 0, 4, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(174, 25);
-            label1.TabIndex = 2;
-            label1.Text = "Barang Gudang";
-            // 
             // DataGudang
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
@@ -228,6 +218,5 @@
         private DataGridViewTextBoxColumn Jumlah;
         private DataGridViewTextBoxColumn Rak;
         private DataGridViewTextBoxColumn Gudang;
-        private DataGridViewButtonColumn Hapus;
     }
 }

@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             panel1 = new Panel();
             BtnBack = new Button();
             label1 = new Label();
@@ -40,10 +42,11 @@
             label5 = new Label();
             ComboMember = new ComboBox();
             Data_Transaksi = new DataGridView();
-            Barang = new DataGridViewTextBoxColumn();
+            Nama = new DataGridViewTextBoxColumn();
             Harga = new DataGridViewTextBoxColumn();
             Total = new DataGridViewTextBoxColumn();
             Sub = new DataGridViewTextBoxColumn();
+            Hapus = new DataGridViewButtonColumn();
             TextJumlah = new TextBox();
             label6 = new Label();
             TextTotal2 = new TextBox();
@@ -181,19 +184,29 @@
             // Data_Transaksi
             // 
             Data_Transaksi.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Data_Transaksi.Columns.AddRange(new DataGridViewColumn[] { Barang, Harga, Total, Sub });
+            Data_Transaksi.Columns.AddRange(new DataGridViewColumn[] { Nama, Harga, Total, Sub, Hapus });
             Data_Transaksi.Location = new Point(12, 295);
             Data_Transaksi.Name = "Data_Transaksi";
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            Data_Transaksi.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
             Data_Transaksi.RowHeadersWidth = 51;
+            dataGridViewCellStyle2.ForeColor = Color.Black;
+            Data_Transaksi.RowsDefaultCellStyle = dataGridViewCellStyle2;
             Data_Transaksi.Size = new Size(1244, 646);
             Data_Transaksi.TabIndex = 10;
             // 
-            // Barang
+            // Nama
             // 
-            Barang.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Barang.HeaderText = "Nama Barang";
-            Barang.MinimumWidth = 6;
-            Barang.Name = "Barang";
+            Nama.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Nama.HeaderText = "Nama Barang";
+            Nama.MinimumWidth = 6;
+            Nama.Name = "Nama";
             // 
             // Harga
             // 
@@ -215,6 +228,15 @@
             Sub.HeaderText = "Sub Total";
             Sub.MinimumWidth = 6;
             Sub.Name = "Sub";
+            // 
+            // Hapus
+            // 
+            Hapus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Hapus.HeaderText = "";
+            Hapus.MinimumWidth = 6;
+            Hapus.Name = "Hapus";
+            Hapus.Text = "Hapus";
+            Hapus.UseColumnTextForButtonValue = true;
             // 
             // TextJumlah
             // 
@@ -386,6 +408,7 @@
             BtnKlik.TabIndex = 32;
             BtnKlik.Text = "Klik";
             BtnKlik.UseVisualStyleBackColor = true;
+            BtnKlik.Click += BtnKlik_Click;
             // 
             // Data_Dipending
             // 
@@ -478,7 +501,6 @@
             ForeColor = Color.Cornsilk;
             Margin = new Padding(4, 3, 4, 3);
             Name = "DataTransaksi";
-            Text = "DataTransaksi";
             Load += DataTransaksi_Load;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -501,10 +523,6 @@
         private Label label5;
         private ComboBox ComboMember;
         private DataGridView Data_Transaksi;
-        private DataGridViewTextBoxColumn Barang;
-        private DataGridViewTextBoxColumn Harga;
-        private DataGridViewTextBoxColumn Total;
-        private DataGridViewTextBoxColumn Sub;
         private TextBox TextJumlah;
         private Label label6;
         private TextBox TextTotal2;
@@ -531,5 +549,10 @@
         private TextBox TextUser;
         private TextBox TextMember;
         private Label label14;
+        private DataGridViewTextBoxColumn Nama;
+        private DataGridViewTextBoxColumn Harga;
+        private DataGridViewTextBoxColumn Total;
+        private DataGridViewTextBoxColumn Sub;
+        private DataGridViewButtonColumn Hapus;
     }
 }
