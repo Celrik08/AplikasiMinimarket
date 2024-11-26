@@ -308,6 +308,7 @@ namespace AplikasiMinimarket
 
         private void PerfromTransaksi()
         {
+            // Validasi input
             if (ComboMember.SelectedItem == null || ComboBarang.SelectedItem == null ||
                 string.IsNullOrWhiteSpace(TextTotal1.Text) || string.IsNullOrWhiteSpace(TextTotal2.Text))
             {
@@ -324,6 +325,7 @@ namespace AplikasiMinimarket
                 {
                     conn.Open();
 
+                    // Periksa apakah id_transaksi sudah ada di tb_transaksi
                     using (SqlCommand checkTransaksiCmd = new SqlCommand("SELECT COUNT(*) FROM tb_transaksi WHERE id_transaksi = @id_transaksi", conn))
                     {
                         checkTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
@@ -331,7 +333,7 @@ namespace AplikasiMinimarket
 
                         if (count == 0)
                         {
-                            // Insert ke tabel tb_transaksi
+                            // Insert ke tabel tb_transaksi jika belum ada
                             using (SqlCommand insertTransaksiCmd = new SqlCommand("INSERT INTO tb_transaksi (id_transaksi, tanggal_transaksi, id_user, grand_total, id_status_transaksi, id_member) VALUES (@id_transaksi, @tanggal_transaksi, @id_user, @grand_total, @id_status_transaksi, @id_member)", conn))
                             {
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
@@ -343,46 +345,63 @@ namespace AplikasiMinimarket
                                 insertTransaksiCmd.Parameters.AddWithValue("@grand_total", decimal.Parse(grandTotalText));
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
+
                                 insertTransaksiCmd.ExecuteNonQuery();
                             }
                         }
-
-                        // Insert ke tabel tb_detail_transaksi
-                        using (SqlCommand insertDetailCmd = new SqlCommand("INSERT INTO tb_detail_transaksi (id_transaksi, id_barang, harga_satuan, qty, sub_total) VALUES (@id_transaksi, @id_barang, @harga_satuan, @qty, @sub_total)", conn))
-                        {
-                            insertDetailCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
-                            insertDetailCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
-
-                            string hargaSatuanText = TextHarga.Text.Replace("Rp. ", "").Replace(" ", "");
-                            insertDetailCmd.Parameters.AddWithValue("@harga_satuan", decimal.Parse(hargaSatuanText));
-
-                            insertDetailCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
-
-                            string subTotalText = TextSub.Text.Replace("Rp. ", "").Replace(" ", "");
-                            insertDetailCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(subTotalText));
-
-                            insertDetailCmd.ExecuteNonQuery();
-                        }
-
-                        // Update stok di tb_barang
-                        using (SqlCommand updateCmd = new SqlCommand("UPDATE tb_barang SET total_stok = total_stok - @qty WHERE id_barang = @id_barang", conn))
-                        {
-                            int qty = int.Parse(TextTotal1.Text);
-                            updateCmd.Parameters.AddWithValue("@qty", qty);
-                            updateCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
-                            updateCmd.ExecuteNonQuery();
-                        }
-
-                        // Reset komponen setelah transaksi
-                        LoadDataToDataGridView();
-                        ResetKomponen();
                     }
+
+                    // Periksa apakah id_barang sudah ada di tb_detail_transaksi untuk id_transaksi yang sama
+                    using (SqlCommand checkDetailTransaksiCmd = new SqlCommand("SELECT COUNT(*) FROM tb_detail_transaksi WHERE id_transaksi = @id_transaksi AND id_barang = @id_barang", conn))
+                    {
+                        checkDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                        checkDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+                        int countDetail = (int)checkDetailTransaksiCmd.ExecuteScalar();
+
+                        if (countDetail > 0)
+                        {
+                            // Jika id_barang sudah ada, update qty dan sub_total
+                            using (SqlCommand updateDetailTransaksiCmd = new SqlCommand("UPDATE tb_detail_transaksi SET qty = qty + @qty, sub_total = sub_total + @sub_total WHERE id_transaksi = @id_transaksi AND id_barang = @id_barang", conn))
+                            {
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text)); // Menambah qty
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(TextSub.Text.Replace("Rp. ", "").Replace(",", ""))); // Menambah sub_total
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+
+                                updateDetailTransaksiCmd.ExecuteNonQuery();
+                            }
+                        }
+                        else
+                        {
+                            // Jika id_barang belum ada, insert data baru ke tb_detail_transaksi
+                            using (SqlCommand insertDetailTransaksiCmd = new SqlCommand("INSERT INTO tb_detail_transaksi (id_transaksi, id_barang, harga_satuan, qty, sub_total) VALUES (@id_transaksi, @id_barang, @harga_satuan, @qty, @sub_total)", conn))
+                            {
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@harga_satuan", decimal.Parse(TextHarga.Text.Replace("Rp. ", "").Replace(",", "")));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(TextSub.Text.Replace("Rp. ", "").Replace(",", "")));
+
+                                insertDetailTransaksiCmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+
+                    // Mengurangi stok barang
+                    using (SqlCommand updateStokCmd = new SqlCommand("UPDATE tb_barang SET total_stok = total_stok - @qty WHERE id_barang = @id_barang", conn))
+                    {
+                        updateStokCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+                        updateStokCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+
+                        updateStokCmd.ExecuteNonQuery();
+                    }
+
+                    LoadDataToDataGridView();
+                    ResetKomponen();
                 }
             }
-            else
-            {
-                MessageBox.Show("Mohon lengkapi semua data.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+
+            MessageBox.Show("Transaksi berhasil disimpan!", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ResetKomponen()
