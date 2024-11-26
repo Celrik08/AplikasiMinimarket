@@ -38,23 +38,26 @@ namespace AplikasiMinimarket
             ComboPegawai.Items.Clear();
             pegawais.Clear();
 
-            using (SqlCommand cmd = new SqlCommand("SELECT id_pegawai, nama_pegawai FROM tb_pegawai", Connect.conn))
+            // Menggunakan 'using' untuk koneksi dan perintah SQL
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT id_pegawai, nama_pegawai FROM tb_pegawai", conn))
                 {
-                    Pegawai pegawai = new Pegawai
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        IdPegawai = (int)reader["id_pegawai"],
-                        NamaPegawai = reader["nama_pegawai"].ToString()
-                    };
-                    pegawais.Add(pegawai);
-                    ComboPegawai.Items.Add(pegawai);
-
+                        while (reader.Read())
+                        {
+                            Pegawai pegawai = new Pegawai
+                            {
+                                IdPegawai = (int)reader["id_pegawai"],
+                                NamaPegawai = reader["nama_pegawai"].ToString()
+                            };
+                            pegawais.Add(pegawai);
+                            ComboPegawai.Items.Add(pegawai);
+                        }
+                    }
                 }
-                reader.Close();
-                Connect.conn.Close();
             }
         }
 
@@ -63,23 +66,26 @@ namespace AplikasiMinimarket
             ComboGudang.Items.Clear();
             gudangs.Clear();
 
-            using (SqlCommand cmd = new SqlCommand("SELECT id_gudang, nama_gudang FROM tb_gudang", Connect.conn))
+            // Menggunakan 'using' untuk koneksi dan perintah SQL
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT id_gudang, nama_gudang FROM tb_gudang", conn))
                 {
-                    Gudang gudang = new Gudang
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        IdGudang = (int)reader["id_gudang"],
-                        NamaGudang = reader["nama_gudang"].ToString()
-                    };
-                    gudangs.Add(gudang);
-                    ComboGudang.Items.Add(gudang);
-
+                        while (reader.Read())
+                        {
+                            Gudang gudang = new Gudang
+                            {
+                                IdGudang = (int)reader["id_gudang"],
+                                NamaGudang = reader["nama_gudang"].ToString()
+                            };
+                            gudangs.Add(gudang);
+                            ComboGudang.Items.Add(gudang);
+                        }
+                    }
                 }
-                reader.Close();
-                Connect.conn.Close();
             }
         }
 
@@ -88,22 +94,26 @@ namespace AplikasiMinimarket
             ComboRole.Items.Clear();
             roles.Clear();
 
-            using (SqlCommand cmd = new SqlCommand("SELECT id_role, nama_role FROM tb_role", Connect.conn))
+            // Menggunakan 'using' untuk koneksi dan perintah SQL
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT id_role, nama_role FROM tb_role", conn))
                 {
-                    Role role = new Role
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        IdRole = (int)reader["id_role"],
-                        NamaRole = reader["nama_role"].ToString()
-                    };
-                    roles.Add(role);
-                    ComboRole.Items.Add(role);
+                        while (reader.Read())
+                        {
+                            Role role = new Role
+                            {
+                                IdRole = (int)reader["id_role"],
+                                NamaRole = reader["nama_role"].ToString()
+                            };
+                            roles.Add(role);
+                            ComboRole.Items.Add(role);
+                        }
+                    }
                 }
-                reader.Close();
-                Connect.conn.Close();
             }
         }
 
@@ -118,36 +128,38 @@ namespace AplikasiMinimarket
             // Ambil posisi kursor saat ini
             int cursorPosition = ComboPegawai.SelectionStart;
 
-            // Dapatkan teks yang input pengguna saat ini
+            // Dapatkan teks yang diinput pengguna saat ini
             string currentText = ComboPegawai.Text;
 
             // Filter daftar pegawai berdasarkan nama_pegawai yang sesuai dengan teks pencarian
             var filteredPegawais = pegawais.FindAll(p =>
-            {
-                // Pisahkan nama pegawai menjadi array kata-kata
-                var nameParts = p.NamaPegawai.Split(' ');
-                // Periksa apakah salah satu bagian dari nama cocok dengan teks input
-                return nameParts.Any(part => part.ToUpper().Contains(currentText.ToUpper()));
-            });
+                p.NamaPegawai.ToUpper().Contains(currentText.ToUpper())
+            );
 
-            // Cek jika ada satu hasil yang sepenuhnya cocok dengan teks input pengguna
-            if (filteredPegawais.Count == 1 &&
-                filteredPegawais[0].NamaPegawai.Equals(currentText, StringComparison.OrdinalIgnoreCase))
+            // Kosongkan ComboBox dan isi ulang dengan hasil filter
+            ComboPegawai.Items.Clear();
+            foreach (var pegawai in filteredPegawais)
             {
-                // Jika hasilnya satu dan teksnya cocok sepenuhnya, jangan tampilkan dropdown lagi
-                ComboPegawai.DroppedDown = false;
+                ComboPegawai.Items.Add(pegawai);
+            }
+
+            // Jika ada hasil dan input pengguna cocok dengan salah satu nama pegawai, pilih item tersebut
+            var selectedPegawai = filteredPegawais.FirstOrDefault(p =>
+                p.NamaPegawai.Equals(currentText, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedPegawai != null)
+            {
+                ComboPegawai.SelectedItem = selectedPegawai;
+            }
+            else if (filteredPegawais.Count > 0)
+            {
+                // Jika hasil filter tidak kosong, buka dropdown
+                ComboPegawai.DroppedDown = true;
             }
             else
             {
-                // Kosongkan ComboBox dan isi ulang dengan hasil filter
-                ComboPegawai.Items.Clear();
-                foreach (var pegawai in filteredPegawais)
-                {
-                    ComboPegawai.Items.Add(pegawai);
-                }
-
-                // Tampilkan kembali dropdown secara otomatis
-                ComboPegawai.DroppedDown = true;
+                // Jika tidak ada hasil, sembunyikan dropdown
+                ComboPegawai.DroppedDown = false;
             }
 
             // Tampilkan kembali teks pencarian dan arahkan kursor ke posisi sebelumnya
@@ -340,14 +352,19 @@ namespace AplikasiMinimarket
         private bool IsUsernameExists(string username)
         {
             bool exists = false;
-            Connect.conn.Open();
-            using (SqlCommand cmd = Connect.conn.CreateCommand())
+
+            // Menggunakan 'using' untuk otomatis membuka dan menutup koneksi
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                cmd.CommandText = "SELECT COUNT(*) FROM tb_user WHERE username = @username";
-                cmd.Parameters.AddWithValue("@username", username);
-                exists = (int)cmd.ExecuteScalar() > 0;
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT COUNT(*) FROM tb_user WHERE username = @username";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    exists = (int)cmd.ExecuteScalar() > 0;
+                }
             }
-            Connect.conn.Close();
+
             return exists;
         }
 
@@ -397,20 +414,22 @@ namespace AplikasiMinimarket
             int idGudang = selectedGudang.IdGudang;
             int idRole = selectedRole.IdRole;
 
-            // Simpan data ke database
-            Connect.conn.Open();
-            using (SqlCommand cmd = Connect.conn.CreateCommand())
+            // Simpan data ke database menggunakan koneksi otomatis terbuka dan tertutup
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                cmd.CommandText = "INSERT INTO tb_user (username, password, salt, id_pegawai, id_gudang, id_role) VALUES (@username, @password, @salt, @id_pegawai, @id_gudang, @id_role)";
-                cmd.Parameters.AddWithValue("@username", username);
-                cmd.Parameters.AddWithValue("@password", hashedPassword);
-                cmd.Parameters.AddWithValue("@salt", salt);
-                cmd.Parameters.AddWithValue("@id_pegawai", idPegawai);
-                cmd.Parameters.AddWithValue("@id_gudang", idGudang);
-                cmd.Parameters.AddWithValue("@id_role", idRole);
-                cmd.ExecuteNonQuery();
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "INSERT INTO tb_user (username, password, salt, id_pegawai, id_gudang, id_role) VALUES (@username, @password, @salt, @id_pegawai, @id_gudang, @id_role)";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@password", hashedPassword);
+                    cmd.Parameters.AddWithValue("@salt", salt);
+                    cmd.Parameters.AddWithValue("@id_pegawai", idPegawai);
+                    cmd.Parameters.AddWithValue("@id_gudang", idGudang);
+                    cmd.Parameters.AddWithValue("@id_role", idRole);
+                    cmd.ExecuteNonQuery();
+                }
             }
-            Connect.conn.Close();
 
             MessageBox.Show("Data berhasil di input! password acak: " + password, "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -447,25 +466,30 @@ namespace AplikasiMinimarket
                             "JOIN tb_gudang ON tb_user.id_gudang = tb_gudang.id_gudang " +
                             "JOIN tb_role ON tb_user.id_role = tb_role.id_role ";
 
-            // Buat SqlCommand untuk menjalankan kueri
-            using (SqlCommand cmd = new SqlCommand(query, Connect.conn))
+            // Menggunakan SqlConnection secara otomatis terbuka dan tertutup
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                // Buka koneksi
+                conn.Open();
+
+                // Buat SqlCommand untuk menjalankan kueri
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    while (reader.Read())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        // Menambahkan data ke DataGridView
-                        string user = reader["id_user"].ToString();
-                        string nama = reader["username"].ToString();
-                        string password = reader["password"].ToString();
-                        string pegawai = reader["nama_pegawai"].ToString();
-                        string gudang = reader["nama_gudang"].ToString();
-                        string role = reader["nama_role"].ToString();
-                        Data_User.Rows.Add(user, nama, password, pegawai, gudang, role);
+                        while (reader.Read())
+                        {
+                            // Menambahkan data ke DataGridView
+                            string user = reader["id_user"].ToString();
+                            string nama = reader["username"].ToString();
+                            string password = reader["password"].ToString();
+                            string pegawai = reader["nama_pegawai"].ToString();
+                            string gudang = reader["nama_gudang"].ToString();
+                            string role = reader["nama_role"].ToString();
+                            Data_User.Rows.Add(user, nama, password, pegawai, gudang, role);
+                        }
                     }
                 }
-                Connect.conn.Close();
             }
         }
 
@@ -521,20 +545,23 @@ namespace AplikasiMinimarket
 
                     // Tampilkan semua pegawai di ComboBox
                     ComboPegawai.Items.Clear();
-                    Connect.conn.Open();
-                    Connect.cmd = new SqlCommand("SELECT * FROM tb_pegawai", Connect.conn);
-                    Connect.reader = Connect.cmd.ExecuteReader();
-                    while (Connect.reader.Read())
+                    using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                     {
-                        Pegawai pegawai = new Pegawai
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand("SELECT * FROM tb_pegawai", conn))
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            IdPegawai = (int)Connect.reader["id_pegawai"],
-                            NamaPegawai = (string)Connect.reader["nama_pegawai"]
-                        };
-                        ComboPegawai.Items.Add(pegawai);
+                            while (reader.Read())
+                            {
+                                Pegawai pegawai = new Pegawai
+                                {
+                                    IdPegawai = (int)reader["id_pegawai"],
+                                    NamaPegawai = (string)reader["nama_pegawai"]
+                                };
+                                ComboPegawai.Items.Add(pegawai);
+                            }
+                        }
                     }
-                    Connect.reader.Close();
-                    Connect.conn.Close();
                     ComboPegawai.SelectedItem = ComboPegawai.Items.Cast<Pegawai>().FirstOrDefault(p => p.NamaPegawai == namaPegawai);
                 }
                 else
@@ -549,20 +576,23 @@ namespace AplikasiMinimarket
 
                     // Tampilkan semua gudang di ComboBox
                     ComboGudang.Items.Clear();
-                    Connect.conn.Open();
-                    Connect.cmd = new SqlCommand("SELECT * FROM tb_gudang", Connect.conn);
-                    Connect.reader = Connect.cmd.ExecuteReader();
-                    while (Connect.reader.Read())
+                    using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                     {
-                        Gudang gudang = new Gudang
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand("SELECT * FROM tb_gudang", conn))
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            IdGudang = (int)Connect.reader["id_gudang"],
-                            NamaGudang = (string)Connect.reader["nama_gudang"]
-                        };
-                        ComboGudang.Items.Add(gudang);
+                            while (reader.Read())
+                            {
+                                Gudang gudang = new Gudang
+                                {
+                                    IdGudang = (int)reader["id_gudang"],
+                                    NamaGudang = (string)reader["nama_gudang"]
+                                };
+                                ComboGudang.Items.Add(gudang);
+                            }
+                        }
                     }
-                    Connect.reader.Close();
-                    Connect.conn.Close();
                     ComboGudang.SelectedItem = ComboGudang.Items.Cast<Gudang>().FirstOrDefault(g => g.NamaGudang == namaGudang);
                 }
                 else
@@ -577,20 +607,23 @@ namespace AplikasiMinimarket
 
                     // Tampilkan semua role di ComboBox
                     ComboRole.Items.Clear();
-                    Connect.conn.Open();
-                    Connect.cmd = new SqlCommand("SELECT * FROM tb_role", Connect.conn);
-                    Connect.reader = Connect.cmd.ExecuteReader();
-                    while (Connect.reader.Read())
+                    using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                     {
-                        Role role = new Role
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand("SELECT * FROM tb_role", conn))
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            IdRole = (int)Connect.reader["id_role"],
-                            NamaRole = (string)Connect.reader["nama_role"]
-                        };
-                        ComboRole.Items.Add(role);
+                            while (reader.Read())
+                            {
+                                Role role = new Role
+                                {
+                                    IdRole = (int)reader["id_role"],
+                                    NamaRole = (string)reader["nama_role"]
+                                };
+                                ComboRole.Items.Add(role);
+                            }
+                        }
                     }
-                    Connect.reader.Close();
-                    Connect.conn.Close();
                     ComboRole.SelectedItem = ComboRole.Items.Cast<Role>().FirstOrDefault(r => r.NamaRole == namaRole);
                 }
                 else
@@ -611,14 +644,20 @@ namespace AplikasiMinimarket
         private string GetCurrentUsername(string id)
         {
             string currentUsername = null;
-            Connect.conn.Open();
-            using (SqlCommand cmd = Connect.conn.CreateCommand())
+
+            // Automatically handle connection opening and closing using 'using' statement
+            string query = "SELECT username FROM tb_user WHERE id_user = @id_user";
+
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString)) // Using the connection within a 'using' block
             {
-                cmd.CommandText = "SELECT username FROM tb_user WHERE id_user = @id_user";
-                cmd.Parameters.AddWithValue("@id_user", id);
-                currentUsername = cmd.ExecuteScalar()?.ToString();
-            }
-            Connect.conn.Close();
+                conn.Open();  // Open the connection
+                using (SqlCommand cmd = new SqlCommand(query, conn)) // Create command within the 'using' block
+                {
+                    cmd.Parameters.AddWithValue("@id_user", id);
+                    currentUsername = cmd.ExecuteScalar()?.ToString();
+                }
+            } // Connection will be automatically closed here
+
             return currentUsername;
         }
 

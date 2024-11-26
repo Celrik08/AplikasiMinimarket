@@ -39,23 +39,24 @@ namespace AplikasiMinimarket
             string urutanKode;
             long hitung;
 
-            using (SqlCommand cmd = new SqlCommand(query, Connect.conn))
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read() && dr.HasRows)
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    hitung = long.Parse(dr.GetString(0).Substring(dr.GetString(0).Length - 9));
-                    // Jika tombol ditekan, tambahkan 1
-                    urutanKode = "TRS" + DateTime.Now.ToString("ddMMyy") + (hitung + currentCount).ToString("D3");
+                    conn.Open();
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read() && dr.HasRows)
+                        {
+                            hitung = long.Parse(dr.GetString(0).Substring(dr.GetString(0).Length - 9));
+                            urutanKode = "TRS" + DateTime.Now.ToString("ddMMyy") + (hitung + currentCount).ToString("D3");
+                        }
+                        else
+                        {
+                            urutanKode = "TRS" + DateTime.Now.ToString("ddMMyy") + "001";
+                        }
+                    }
                 }
-                else
-                {
-                    // Jika tidak ada data sebelumnya
-                    urutanKode = "TRS" + DateTime.Now.ToString("ddMMyy") + "001";
-                }
-                dr.Close();
-                Connect.conn.Close();
             }
 
             TextTransaksi.Text = urutanKode;
@@ -84,22 +85,25 @@ namespace AplikasiMinimarket
             ComboMember.Items.Clear();
             members.Clear();
 
-            using (SqlCommand cmd = new SqlCommand("SELECT id_member, nama_member FROM tb_member", Connect.conn))
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using (SqlCommand cmd = new SqlCommand("SELECT id_member, nama_member FROM tb_member", conn))
                 {
-                    Member member = new Member
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        IdMember = reader["id_member"].ToString(),
-                        NamaMember = reader["nama_member"].ToString()
-                    };
-                    members.Add(member);
-                    ComboMember.Items.Add(member); // Hanya menampilkan IdMember
+                        while (reader.Read())
+                        {
+                            Member member = new Member
+                            {
+                                IdMember = reader["id_member"].ToString(),
+                                NamaMember = reader["nama_member"].ToString()
+                            };
+                            members.Add(member);
+                            ComboMember.Items.Add(member); // Menampilkan IdMember
+                        }
+                    }
                 }
-                reader.Close();
-                Connect.conn.Close();
             }
         }
 
@@ -108,23 +112,26 @@ namespace AplikasiMinimarket
             ComboBarang.Items.Clear();
             barangList.Clear();
 
-            using (SqlCommand cmd = new SqlCommand("SELECT id_barang, nama_barang, harga_satuan FROM tb_barang", Connect.conn))
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using (SqlCommand cmd = new SqlCommand("SELECT id_barang, nama_barang, harga_satuan FROM tb_barang", conn))
                 {
-                    Barang barang = new Barang
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        IdBarang = reader["id_barang"].ToString(),
-                        NamaBarang = reader["nama_barang"].ToString(),
-                        HargaBarang = (int)reader["harga_satuan"]
-                    };
-                    barangList.Add(barang);
-                    ComboBarang.Items.Add(barang.IdBarang); // Menampilkan id_barang di ComboBox
+                        while (reader.Read())
+                        {
+                            Barang barang = new Barang
+                            {
+                                IdBarang = reader["id_barang"].ToString(),
+                                NamaBarang = reader["nama_barang"].ToString(),
+                                HargaBarang = (int)reader["harga_satuan"]
+                            };
+                            barangList.Add(barang);
+                            ComboBarang.Items.Add(barang.IdBarang); // Menampilkan id_barang di ComboBox
+                        }
+                    }
                 }
-                reader.Close();
-                Connect.conn.Close();
             }
         }
 
@@ -313,62 +320,63 @@ namespace AplikasiMinimarket
 
             if (selectedMember != null && selectedBarangId != null)
             {
-                using (SqlCommand checkTransaksiCmd = new SqlCommand("SELECT COUNT(*) FROM tb_transaksi WHERE id_transaksi = @id_transaksi", Connect.conn))
+                using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                 {
-                    checkTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
-                    Connect.conn.Open();
-                    int count = (int)checkTransaksiCmd.ExecuteScalar();
+                    conn.Open();
 
-                    if (count == 0)
+                    using (SqlCommand checkTransaksiCmd = new SqlCommand("SELECT COUNT(*) FROM tb_transaksi WHERE id_transaksi = @id_transaksi", conn))
                     {
-                        // Insert ke tabel tb_transaksi
-                        using (SqlCommand insertTransaksiCmd = new SqlCommand("INSERT INTO tb_transaksi (id_transaksi, tanggal_transaksi, id_user, grand_total, id_status_transaksi, id_member) VALUES (@id_transaksi, @tanggal_transaksi, @id_user, @grand_total, @id_status_transaksi, @id_member)", Connect.conn))
+                        checkTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                        int count = (int)checkTransaksiCmd.ExecuteScalar();
+
+                        if (count == 0)
                         {
-                            insertTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
-                            DateTime tanggalTransaksi = DateTime.ParseExact(TextTanggal.Text + " " + TextJam.Text, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                            insertTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
-                            insertTransaksiCmd.Parameters.AddWithValue("@id_user", loggedInUserId);
+                            // Insert ke tabel tb_transaksi
+                            using (SqlCommand insertTransaksiCmd = new SqlCommand("INSERT INTO tb_transaksi (id_transaksi, tanggal_transaksi, id_user, grand_total, id_status_transaksi, id_member) VALUES (@id_transaksi, @tanggal_transaksi, @id_user, @grand_total, @id_status_transaksi, @id_member)", conn))
+                            {
+                                insertTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                                DateTime tanggalTransaksi = DateTime.ParseExact(TextTanggal.Text + " " + TextJam.Text, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                                insertTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
+                                insertTransaksiCmd.Parameters.AddWithValue("@id_user", loggedInUserId);
 
-                            // Menghapus "Rp." dan spasi sebelum memasukkan nilai ke database
-                            string grandTotalText = TextTotal2.Text.Replace("Rp. ", "").Replace(" ", "");
-                            insertTransaksiCmd.Parameters.AddWithValue("@grand_total", decimal.Parse(grandTotalText));
-                            insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
-                            insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
-                            insertTransaksiCmd.ExecuteNonQuery();
+                                string grandTotalText = TextTotal2.Text.Replace("Rp. ", "").Replace(" ", "");
+                                insertTransaksiCmd.Parameters.AddWithValue("@grand_total", decimal.Parse(grandTotalText));
+                                insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
+                                insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
+                                insertTransaksiCmd.ExecuteNonQuery();
+                            }
                         }
+
+                        // Insert ke tabel tb_detail_transaksi
+                        using (SqlCommand insertDetailCmd = new SqlCommand("INSERT INTO tb_detail_transaksi (id_transaksi, id_barang, harga_satuan, qty, sub_total) VALUES (@id_transaksi, @id_barang, @harga_satuan, @qty, @sub_total)", conn))
+                        {
+                            insertDetailCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                            insertDetailCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+
+                            string hargaSatuanText = TextHarga.Text.Replace("Rp. ", "").Replace(" ", "");
+                            insertDetailCmd.Parameters.AddWithValue("@harga_satuan", decimal.Parse(hargaSatuanText));
+
+                            insertDetailCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+
+                            string subTotalText = TextSub.Text.Replace("Rp. ", "").Replace(" ", "");
+                            insertDetailCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(subTotalText));
+
+                            insertDetailCmd.ExecuteNonQuery();
+                        }
+
+                        // Update stok di tb_barang
+                        using (SqlCommand updateCmd = new SqlCommand("UPDATE tb_barang SET total_stok = total_stok - @qty WHERE id_barang = @id_barang", conn))
+                        {
+                            int qty = int.Parse(TextTotal1.Text);
+                            updateCmd.Parameters.AddWithValue("@qty", qty);
+                            updateCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
+                            updateCmd.ExecuteNonQuery();
+                        }
+
+                        // Reset komponen setelah transaksi
+                        LoadDataToDataGridView();
+                        ResetKomponen();
                     }
-
-                    // Insert ke tabel tb_detail_transaksi
-                    using (SqlCommand insertDetailCmd = new SqlCommand("INSERT INTO tb_detail_transaksi (id_transaksi, id_barang, harga_satuan, qty, sub_total) VALUES (@id_transaksi, @id_barang, @harga_satuan, @qty, @sub_total)", Connect.conn))
-                    {
-                        insertDetailCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
-                        insertDetailCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
-
-                        // Menghapus "Rp." dan spasi sebelum memasukkan nilai ke database
-                        string hargaSatuanText = TextHarga.Text.Replace("Rp. ", "").Replace(" ", "");
-                        insertDetailCmd.Parameters.AddWithValue("@harga_satuan", decimal.Parse(hargaSatuanText));
-
-                        insertDetailCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
-
-                        // Menghapus "Rp." dan spasi dari sub_total sebelum menyimpannya
-                        string subTotalText = TextSub.Text.Replace("Rp. ", "").Replace(" ", "");
-                        insertDetailCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(subTotalText));
-
-                        insertDetailCmd.ExecuteNonQuery();
-                    }
-
-                    // Update stok di tb_buku
-                    using (SqlCommand updateCmd = new SqlCommand("UPDATE tb_barang SET total_stok = total_stok - @qty WHERE id_barang = @id_barang", Connect.conn))
-                    {
-                        updateCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
-                        updateCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
-                        updateCmd.ExecuteNonQuery();
-                    }
-
-                    // Reset komponen setelah transaksi
-                    LoadDataToDataGridView();
-                    ResetKomponen();
-                    Connect.conn.Close();
                 }
             }
             else
@@ -404,29 +412,29 @@ namespace AplikasiMinimarket
 
         private void LoadDataToDataGridView()
         {
-            // Kosongkann DataGridView terlebih dahulu
             Data_Transaksi.Rows.Clear();
 
-            // Tulis kueri SQL Anda untuk mengambil data dari nilai
             string query = "SELECT tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, tb_detail_transaksi.sub_total " +
                             "FROM tb_detail_transaksi " +
                             "JOIN tb_barang ON tb_detail_transaksi.id_barang = tb_barang.id_barang";
 
-            // Buat SqlCommand untuk menjalankan kueri
-            using (SqlCommand cmd = new SqlCommand(query, Connect.conn))
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                Connect.conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    string nama = reader["nama_barang"].ToString();
-                    string harga = reader["harga_satuan"].ToString();
-                    string qty = reader["qty"].ToString();
-                    string sub = reader["sub_total"].ToString();
-                    Data_Transaksi.Rows.Add(nama, harga, qty, sub);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string nama = reader["nama_barang"].ToString();
+                            string harga = reader["harga_satuan"].ToString();
+                            string qty = reader["qty"].ToString();
+                            string sub = reader["sub_total"].ToString();
+                            Data_Transaksi.Rows.Add(nama, harga, qty, sub);
+                        }
+                    }
                 }
-                reader.Close();
-                Connect.conn.Close();
             }
         }
     }
