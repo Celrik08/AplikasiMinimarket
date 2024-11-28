@@ -275,7 +275,7 @@ namespace AplikasiMinimarket
                 string totalText = TextTotal1.Text;
 
                 // Menghapus "Rp.", spasi, dan semua titik pemisah ribuan dari harga
-                hargaText = hargaText.Replace("Rp. ", "").Replace(" ", "").Replace(".", "");
+                hargaText = hargaText.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
 
                 // Pastikan TextTotal1 berisi angka
                 if (int.TryParse(hargaText, out int harga) &&
@@ -357,7 +357,7 @@ namespace AplikasiMinimarket
                                 insertTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_user", loggedInUserId);
 
-                                string grandTotalText = TextTotal2.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", "");
+                                string grandTotalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
                                 insertTransaksiCmd.Parameters.AddWithValue("@grand_total", int.Parse(grandTotalText));
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
@@ -380,7 +380,7 @@ namespace AplikasiMinimarket
                             using (SqlCommand updateDetailTransaksiCmd = new SqlCommand("UPDATE tb_detail_transaksi SET qty = qty + @qty, sub_total = sub_total + @sub_total WHERE id_transaksi = @id_transaksi AND id_barang = @id_barang", conn))
                             {
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text)); // Menambah qty
-                                updateDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", ""))); // Menambah sub_total
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", ""))); // Menambah sub_total
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
 
@@ -394,9 +394,9 @@ namespace AplikasiMinimarket
                             {
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
-                                insertDetailTransaksiCmd.Parameters.AddWithValue("@harga_satuan", int.Parse(TextHarga.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", "")));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@harga_satuan", int.Parse(TextHarga.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "")));
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
-                                insertDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", "")));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "")));
 
                                 insertDetailTransaksiCmd.ExecuteNonQuery();
                             }
@@ -441,7 +441,7 @@ namespace AplikasiMinimarket
             PerformMember();
             TextUser.Text = $"{loggedInUserId} - {loggedInUsername}";
             PerformBarang();
-            TextTotal2.Text = "Rp. " + "0";
+            TextTotal2.Text = "Rp. " + 0;
             LoadDataToDataGridView();
         }
 
