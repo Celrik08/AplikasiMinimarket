@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -286,6 +286,8 @@ namespace AplikasiMinimarket
 
                     // Tambahkan "Rp." ke hasil dan tampilkan di TextSub
                     TextSub.Text = "Rp. " + totalHarga;
+
+                    TextSub.Focus();
                 }
                 else
                 {
@@ -297,6 +299,17 @@ namespace AplikasiMinimarket
             else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
             {
                 e.Handled = true; // Mencegah input selain angka dan kontrol
+            }
+        }
+
+
+        private void TextSub_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Jika yang di tekan adalah tombol enter
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true;
+                PerfromTransaksi();
             }
         }
 

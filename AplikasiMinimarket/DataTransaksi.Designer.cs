@@ -378,6 +378,7 @@
             TextSub.Name = "TextSub";
             TextSub.Size = new Size(193, 28);
             TextSub.TabIndex = 30;
+            TextSub.KeyPress += TextSub_KeyPress;
             // 
             // label13
             // 
