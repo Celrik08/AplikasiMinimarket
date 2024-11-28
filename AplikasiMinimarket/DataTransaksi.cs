@@ -233,7 +233,7 @@ namespace AplikasiMinimarket
                 if (selectedBarang != null)
                 {
                     TextNama.Text = selectedBarang.NamaBarang;
-                    TextHarga.Text = "Rp. " + selectedBarang.HargaBarang.ToString("N0", CultureInfo.InvariantCulture);
+                    TextHarga.Text = string.Format("Rp. {0:N0}", selectedBarang.HargaBarang);
                 }
             }
         }
@@ -274,18 +274,21 @@ namespace AplikasiMinimarket
                 string hargaText = TextHarga.Text;
                 string totalText = TextTotal1.Text;
 
-                // Menghapus "Rp." dan spasi dari harga
-                hargaText = hargaText.Replace("Rp. ", "").Replace(" ", "");
+                // Menghapus "Rp.", spasi, dan semua titik pemisah ribuan dari harga
+                hargaText = hargaText.Replace("Rp. ", "").Replace(" ", "").Replace(".", "");
 
                 // Pastikan TextTotal1 berisi angka
-                if (decimal.TryParse(hargaText, out decimal harga) &&
+                if (int.TryParse(hargaText, out int harga) &&
                     int.TryParse(totalText, out int jumlah))
                 {
                     // Hitung total
-                    decimal totalHarga = harga * jumlah;
+                    int totalHarga = harga * jumlah;
+
+                    // Format totalHarga dengan "Rp.", spasi, dan titik pemisah ribuan
+                    string formattedTotal = "Rp. " + totalHarga.ToString("N0");
 
                     // Tambahkan "Rp." ke hasil dan tampilkan di TextSub
-                    TextSub.Text = "Rp. " + totalHarga;
+                    TextSub.Text = formattedTotal;
 
                     TextSub.Focus();
                 }
@@ -354,8 +357,8 @@ namespace AplikasiMinimarket
                                 insertTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_user", loggedInUserId);
 
-                                string grandTotalText = TextTotal2.Text.Replace("Rp. ", "").Replace(" ", "");
-                                insertTransaksiCmd.Parameters.AddWithValue("@grand_total", decimal.Parse(grandTotalText));
+                                string grandTotalText = TextTotal2.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", "");
+                                insertTransaksiCmd.Parameters.AddWithValue("@grand_total", int.Parse(grandTotalText));
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
 
@@ -377,7 +380,7 @@ namespace AplikasiMinimarket
                             using (SqlCommand updateDetailTransaksiCmd = new SqlCommand("UPDATE tb_detail_transaksi SET qty = qty + @qty, sub_total = sub_total + @sub_total WHERE id_transaksi = @id_transaksi AND id_barang = @id_barang", conn))
                             {
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text)); // Menambah qty
-                                updateDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(TextSub.Text.Replace("Rp. ", "").Replace(",", ""))); // Menambah sub_total
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", ""))); // Menambah sub_total
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
 
@@ -391,9 +394,9 @@ namespace AplikasiMinimarket
                             {
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
-                                insertDetailTransaksiCmd.Parameters.AddWithValue("@harga_satuan", decimal.Parse(TextHarga.Text.Replace("Rp. ", "").Replace(",", "")));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@harga_satuan", int.Parse(TextHarga.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", "")));
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
-                                insertDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", decimal.Parse(TextSub.Text.Replace("Rp. ", "").Replace(",", "")));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp. ", "").Replace(" ", "").Replace(".", "")));
 
                                 insertDetailTransaksiCmd.ExecuteNonQuery();
                             }
@@ -460,10 +463,22 @@ namespace AplikasiMinimarket
                         while (reader.Read())
                         {
                             string nama = reader["nama_barang"].ToString();
-                            string harga = reader["harga_satuan"].ToString();
-                            string qty = reader["qty"].ToString();
-                            string sub = reader["sub_total"].ToString();
-                            Data_Transaksi.Rows.Add(nama, harga, qty, sub);
+                            
+
+                            // Ambil nilai harga dan sub_total, lalu format
+                            if (int.TryParse(reader["harga_satuan"].ToString(), out int harga))
+                            {
+                                string formattedHarga = "Rp. " + harga.ToString("N0"); // Format dengan titik ribuan
+                                if (int.TryParse(reader["qty"].ToString(), out int qty))
+                                {
+                                    // Ambil sub_total dan format
+                                    if (int.TryParse(reader["sub_total"].ToString(), out int sub))
+                                    {
+                                        string formattedSub = "Rp. " + sub.ToString("N0");
+                                        Data_Transaksi.Rows.Add(nama, formattedHarga, qty, formattedSub);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
