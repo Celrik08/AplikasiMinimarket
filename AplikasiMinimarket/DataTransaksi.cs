@@ -322,13 +322,20 @@ namespace AplikasiMinimarket
             PerfromTransaksi();
         }
 
+
         private void PerfromTransaksi()
         {
+            // Cegah eksekusi simultan
+            if (isHandlingTextChanged || isSaveButtonClicked)
+                return;
+
+            isSaveButtonClicked = true; // Tandai bahwa tombol sedang diproses
+
             // Validasi input
             if (ComboMember.SelectedItem == null || ComboBarang.SelectedItem == null ||
                 string.IsNullOrWhiteSpace(TextTotal1.Text) || string.IsNullOrWhiteSpace(TextTotal2.Text))
             {
-                MessageBox.Show("Id Member, Kode Barang, dan Total jangan di kosongin", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Id Member, Kode Barang, dan Total jangan dikosongkan", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -418,6 +425,8 @@ namespace AplikasiMinimarket
             }
 
             MessageBox.Show("Transaksi berhasil disimpan!", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            isSaveButtonClicked = false; // Reset status klik tombol
         }
 
         private void ResetKomponen()
@@ -448,6 +457,7 @@ namespace AplikasiMinimarket
         private void LoadDataToDataGridView()
         {
             Data_Transaksi.Rows.Clear();
+            int totalSub = 0;
 
             string query = "SELECT tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, tb_detail_transaksi.sub_total " +
                             "FROM tb_detail_transaksi " +
@@ -474,6 +484,7 @@ namespace AplikasiMinimarket
                                     // Ambil sub_total dan format
                                     if (int.TryParse(reader["sub_total"].ToString(), out int sub))
                                     {
+                                        totalSub += sub;
                                         string formattedSub = "Rp. " + sub.ToString("N0");
                                         Data_Transaksi.Rows.Add(nama, formattedHarga, qty, formattedSub);
                                     }
@@ -483,6 +494,9 @@ namespace AplikasiMinimarket
                     }
                 }
             }
+
+            // Tampilkan total sub_total di TextTotal2
+            TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
         }
     }
 }
