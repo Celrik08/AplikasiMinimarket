@@ -235,9 +235,6 @@ namespace AplikasiMinimarket
                 {
                     TextNama.Text = selectedBarang.NamaBarang;
 
-                    // Debugging untuk memastikan data barang
-                    System.Diagnostics.Debug.WriteLine($"Selected Barang: IdBarang={selectedBarang.IdBarang}, NamaBarang={selectedBarang.NamaBarang}, HargaBarang={selectedBarang.HargaBarang}, Diskon={selectedBarang.Diskon}");
-
                     // Periksa apakah diskon memiliki nilai
                     if (selectedBarang.Diskon > 0) // Cek diskon langsung
                     {
@@ -245,27 +242,15 @@ namespace AplikasiMinimarket
                         decimal hargaAsli = selectedBarang.HargaBarang;
                         decimal hargaSetelahDiskon = hargaAsli - (hargaAsli * selectedBarang.Diskon / 100);
 
-                        // Debugging perhitungan harga diskon
-                        System.Diagnostics.Debug.WriteLine($"Harga Asli: {hargaAsli}, Diskon: {selectedBarang.Diskon}%, Harga Setelah Diskon: {hargaSetelahDiskon}");
-
                         // Tampilkan harga setelah diskon
                         TextHarga.Text = string.Format("Rp. {0:N0}", hargaSetelahDiskon);
                     }
                     else
                     {
                         // Jika diskon tidak ada atau 0, tampilkan harga asli
-                        System.Diagnostics.Debug.WriteLine("Diskon tidak valid atau 0, menampilkan harga asli.");
                         TextHarga.Text = string.Format("Rp. {0:N0}", selectedBarang.HargaBarang);
                     }
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("Barang tidak ditemukan di barangList.");
-                }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("ComboBarang.SelectedItem bukan string.");
             }
         }
 
