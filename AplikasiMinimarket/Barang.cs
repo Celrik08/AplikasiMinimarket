@@ -11,6 +11,7 @@ namespace AplikasiMinimarket
         public string IdBarang { get; set; }
         public string NamaBarang { get; set; }
         public int HargaBarang { get; set; }
+        public int Diskon { get; set; }
 
         public override string ToString()
         {

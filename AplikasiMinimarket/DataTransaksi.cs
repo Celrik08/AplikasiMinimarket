@@ -114,7 +114,7 @@ namespace AplikasiMinimarket
 
             using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT id_barang, nama_barang, harga_satuan FROM tb_barang", conn))
+                using (SqlCommand cmd = new SqlCommand("SELECT id_barang, nama_barang, harga_satuan, diskon FROM tb_barang", conn)) // Gantilah id_diskon dengan diskon
                 {
                     conn.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -125,7 +125,8 @@ namespace AplikasiMinimarket
                             {
                                 IdBarang = reader["id_barang"].ToString(),
                                 NamaBarang = reader["nama_barang"].ToString(),
-                                HargaBarang = (int)reader["harga_satuan"]
+                                HargaBarang = (int)reader["harga_satuan"],
+                                Diskon = reader["diskon"] == DBNull.Value ? 0 : Convert.ToInt32(reader["diskon"]) // Langsung ambil diskon dari kolom diskon
                             };
                             barangList.Add(barang);
                             ComboBarang.Items.Add(barang.IdBarang); // Menampilkan id_barang di ComboBox
@@ -233,8 +234,38 @@ namespace AplikasiMinimarket
                 if (selectedBarang != null)
                 {
                     TextNama.Text = selectedBarang.NamaBarang;
-                    TextHarga.Text = string.Format("Rp. {0:N0}", selectedBarang.HargaBarang);
+
+                    // Debugging untuk memastikan data barang
+                    System.Diagnostics.Debug.WriteLine($"Selected Barang: IdBarang={selectedBarang.IdBarang}, NamaBarang={selectedBarang.NamaBarang}, HargaBarang={selectedBarang.HargaBarang}, Diskon={selectedBarang.Diskon}");
+
+                    // Periksa apakah diskon memiliki nilai
+                    if (selectedBarang.Diskon > 0) // Cek diskon langsung
+                    {
+                        // Hitung harga setelah diskon
+                        decimal hargaAsli = selectedBarang.HargaBarang;
+                        decimal hargaSetelahDiskon = hargaAsli - (hargaAsli * selectedBarang.Diskon / 100);
+
+                        // Debugging perhitungan harga diskon
+                        System.Diagnostics.Debug.WriteLine($"Harga Asli: {hargaAsli}, Diskon: {selectedBarang.Diskon}%, Harga Setelah Diskon: {hargaSetelahDiskon}");
+
+                        // Tampilkan harga setelah diskon
+                        TextHarga.Text = string.Format("Rp. {0:N0}", hargaSetelahDiskon);
+                    }
+                    else
+                    {
+                        // Jika diskon tidak ada atau 0, tampilkan harga asli
+                        System.Diagnostics.Debug.WriteLine("Diskon tidak valid atau 0, menampilkan harga asli.");
+                        TextHarga.Text = string.Format("Rp. {0:N0}", selectedBarang.HargaBarang);
+                    }
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Barang tidak ditemukan di barangList.");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("ComboBarang.SelectedItem bukan string.");
             }
         }
 
