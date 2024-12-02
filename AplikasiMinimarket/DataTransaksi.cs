@@ -452,6 +452,7 @@ namespace AplikasiMinimarket
             PerformBarang();
             TextTotal2.Text = "Rp. " + 0;
             LoadDataToDataGridView();
+            TextJumlah.Text = "Rp. ";
         }
 
         private void LoadDataToDataGridView()
@@ -473,7 +474,7 @@ namespace AplikasiMinimarket
                         while (reader.Read())
                         {
                             string nama = reader["nama_barang"].ToString();
-                            
+
 
                             // Ambil nilai harga dan sub_total, lalu format
                             if (int.TryParse(reader["harga_satuan"].ToString(), out int harga))
@@ -497,6 +498,65 @@ namespace AplikasiMinimarket
 
             // Tampilkan total sub_total di TextTotal2
             TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
+        }
+
+
+        private void TextJumlah_TextChanged(object sender, EventArgs e)
+        {
+            if (isHandlingTextChanged) return;
+
+            isHandlingTextChanged = true;
+
+            string currentText = TextJumlah.Text;
+
+            // Pastikan teks selalu dimulai dengan "Rp. "
+            if (!currentText.StartsWith("Rp. "))
+            {
+                currentText = "Rp. "; // Menambahkan "Rp. " jika belum ada
+                TextJumlah.Text = currentText; // Update teks di awal
+                TextJumlah.SelectionStart = TextJumlah.Text.Length; // Pindahkan kursor ke akhir
+            }
+
+            // Ambil angka setelah "Rp. " dan hapus titik sebelumnya jika ada
+            string angkaText = currentText.Replace("Rp. ", "").Replace(".", "").Trim();
+
+            // Cek apakah input setelah "Rp. " valid dan tidak diawali dengan 0
+            if (angkaText.Length > 0 && angkaText[0] == '0' && angkaText.Length > 1)
+            {
+                // Jika angka diawali dengan 0, hilangkan 0 tersebut
+                angkaText = angkaText.Substring(1);
+            }
+
+            // Format ulang angka dengan pemisah ribuan dan menambah "Rp. " di depan
+            if (long.TryParse(angkaText, out long angka))
+            {
+                // Format angka dengan pemisah ribuan
+                TextJumlah.Text = "Rp. " + angka.ToString("N0");
+                TextJumlah.SelectionStart = TextJumlah.Text.Length; // Pindahkan kursor ke akhir
+            }
+            else
+            {
+                TextJumlah.Text = "Rp. "; // Reset jika input bukan angka
+                TextJumlah.SelectionStart = TextJumlah.Text.Length;
+            }
+
+            isHandlingTextChanged = false;
+        }
+
+        private void TextJumlah_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Cegah karakter selain angka dan backspace
+            if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
+            {
+                e.Handled = true; // Jika bukan angka atau backspace, input dibatalkan
+            }
+
+            // Jika angka diawali dengan '0', hanya angka selain 0 yang bisa dimasukkan setelah "Rp. "
+            string currentText = TextJumlah.Text;
+            if (currentText.Length == 4 && e.KeyChar == '0') // Panjang "Rp. " = 4
+            {
+                e.Handled = true; // Cegah input angka 0 setelah "Rp. "
+            }
         }
     }
 }

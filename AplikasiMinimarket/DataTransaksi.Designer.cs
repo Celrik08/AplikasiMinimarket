@@ -244,6 +244,8 @@
             TextJumlah.Name = "TextJumlah";
             TextJumlah.Size = new Size(184, 28);
             TextJumlah.TabIndex = 12;
+            TextJumlah.TextChanged += TextJumlah_TextChanged;
+            TextJumlah.KeyPress += TextJumlah_KeyPress;
             // 
             // label6
             // 
