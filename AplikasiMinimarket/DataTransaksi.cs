@@ -534,7 +534,7 @@ namespace AplikasiMinimarket
             }
 
             // Ambil angka setelah "Rp. " dan hapus titik sebelumnya jika ada
-            string angkaText = currentText.Replace("Rp. ", "").Replace(".", "").Trim();
+            string angkaText = currentText.Replace("Rp. ", "").Replace(" ", "").Replace(".", "").Trim();
 
             // Cek apakah input setelah "Rp. " valid dan tidak diawali dengan 0
             if (angkaText.Length > 0 && angkaText[0] == '0' && angkaText.Length > 1)
@@ -572,6 +572,30 @@ namespace AplikasiMinimarket
             if (currentText.Length == 4 && e.KeyChar == '0') // Panjang "Rp. " = 4
             {
                 e.Handled = true; // Cegah input angka 0 setelah "Rp. "
+            }
+
+            // Logika tambahan untuk menghitung nilai ketika tombol Enter ditekan
+            if (e.KeyChar == (char)Keys.Enter) // Periksa apakah tombol Enter ditekan
+            {
+                // Ambil nilai dari TextJumlah dan TextTotal2
+                string jumlahText = TextJumlah.Text.Replace("Rp. ", "").Replace(".", "").Trim();
+                string total2Text = TextTotal2.Text.Replace("Rp. ", "").Replace(".", "").Trim();
+
+                if (long.TryParse(jumlahText, out long jumlah) && long.TryParse(total2Text, out long total2))
+                {
+                    long total3 = jumlah - total2; // Lakukan pengurangan
+
+                    // Tampilkan hasil di TextTotal3
+                    TextTotal3.Text = "Rp. " + total3.ToString("N0");
+                }
+                else
+                {
+                    // Jika parsing gagal, tampilkan Rp. 0 di TextTotal3
+                    TextTotal3.Text = "Rp. 0";
+                }
+
+                // Cegah bunyi "ding" ketika Enter ditekan
+                e.Handled = true;
             }
         }
     }
