@@ -54,7 +54,7 @@ namespace AplikasiMinimarket
             Data_Barang.Rows.Clear();
 
             // Tulis kueri SQL Anda untuk mengambil data dari nilai
-            string query = "SELECT tb_barang.id_barang, tb_barang.nama_barang, tb_kategori.nama_kategori, tb_barang.harga_satuan, tb_barang.total_stok " +
+            string query = "SELECT tb_barang.id_barang, tb_barang.nama_barang, tb_kategori.nama_kategori, tb_barang.harga_satuan, tb_barang.total_stok, tb_barang.diskon " +
                             "FROM tb_barang " +
                             "JOIN tb_kategori ON tb_barang.id_kategori = tb_kategori.id_kategori ";
 
@@ -78,8 +78,19 @@ namespace AplikasiMinimarket
                             // Format harga menjadi Rp dengan separator ribuan
                             string formattedHarga = string.Format(new System.Globalization.CultureInfo("id-ID"), "Rp. {0:N0}", hargaSatuan);
 
+                            // Mengambil diskon dan menghitung harga setelah diskon
+                            int diskon = reader.IsDBNull(reader.GetOrdinal("diskon")) ? 0 : reader.GetInt32(reader.GetOrdinal("diskon")); // Diskon dalam persen (misalnya 10 untuk 10%)
+
+                            // Jika diskon adalah 0, hasilkan harga setelah diskon sebagai Rp. 0
+                            string formattedHargaSetelahDiskon = "Rp. 0"; // Default jika diskon 0
+                            if (diskon > 0)
+                            {
+                                int hargaSetelahDiskon = hargaSatuan - (hargaSatuan * diskon / 100);
+                                formattedHargaSetelahDiskon = string.Format(new System.Globalization.CultureInfo("id-ID"), "Rp. {0:N0}", hargaSetelahDiskon);
+                            }
+
                             // Menambahkan baris ke DataGridView
-                            Data_Barang.Rows.Add(id, nama, kategori, formattedHarga, total);
+                            Data_Barang.Rows.Add(id, nama, kategori, formattedHarga, total, diskon.ToString() + "%", formattedHargaSetelahDiskon);
                         }
                     }
                 }

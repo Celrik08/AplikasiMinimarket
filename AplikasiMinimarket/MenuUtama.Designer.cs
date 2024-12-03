@@ -46,6 +46,8 @@
             Kategori = new DataGridViewTextBoxColumn();
             Harga = new DataGridViewTextBoxColumn();
             Total = new DataGridViewTextBoxColumn();
+            Diskon = new DataGridViewTextBoxColumn();
+            Hasil = new DataGridViewTextBoxColumn();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Data_Barang).BeginInit();
             SuspendLayout();
@@ -148,7 +150,7 @@
             // Data_Barang
             // 
             Data_Barang.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Data_Barang.Columns.AddRange(new DataGridViewColumn[] { Id, Nama, Kategori, Harga, Total });
+            Data_Barang.Columns.AddRange(new DataGridViewColumn[] { Id, Nama, Kategori, Harga, Total, Diskon, Hasil });
             Data_Barang.Location = new Point(12, 160);
             Data_Barang.Name = "Data_Barang";
             Data_Barang.RowHeadersWidth = 51;
@@ -190,6 +192,20 @@
             Total.MinimumWidth = 6;
             Total.Name = "Total";
             // 
+            // Diskon
+            // 
+            Diskon.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Diskon.HeaderText = "Diskon";
+            Diskon.MinimumWidth = 6;
+            Diskon.Name = "Diskon";
+            // 
+            // Hasil
+            // 
+            Hasil.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Hasil.HeaderText = "Hasil Diskon";
+            Hasil.MinimumWidth = 6;
+            Hasil.Name = "Hasil";
+            // 
             // MenuUtama
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
@@ -221,11 +237,6 @@
         private Label label1;
         private Label User;
         private DataGridView Data_Barang;
-        private DataGridViewTextBoxColumn Id;
-        private DataGridViewTextBoxColumn Nama;
-        private DataGridViewTextBoxColumn Kategori;
-        private DataGridViewTextBoxColumn Harga;
-        private DataGridViewTextBoxColumn Total;
         private ToolStripMenuItem Back;
         private ToolStripMenuItem DataLogin;
         private ToolStripMenuItem DataPegawai;
@@ -234,5 +245,12 @@
         private ToolStripMenuItem Transaksi;
         private ToolStripMenuItem DataGudang;
         private ToolStripMenuItem DataRole;
+        private DataGridViewTextBoxColumn Id;
+        private DataGridViewTextBoxColumn Nama;
+        private DataGridViewTextBoxColumn Kategori;
+        private DataGridViewTextBoxColumn Harga;
+        private DataGridViewTextBoxColumn Total;
+        private DataGridViewTextBoxColumn Diskon;
+        private DataGridViewTextBoxColumn Hasil;
     }
 }
