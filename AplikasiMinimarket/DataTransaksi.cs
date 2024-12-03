@@ -476,7 +476,7 @@ namespace AplikasiMinimarket
             Data_Transaksi.Rows.Clear();
             int totalSub = 0;
 
-            string query = "SELECT tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, tb_detail_transaksi.sub_total " +
+            string query = "SELECT tb_detail_transaksi.id_detail_transaksi, tb_detail_transaksi.id_barang, tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, tb_detail_transaksi.sub_total " +
                             "FROM tb_detail_transaksi " +
                             "JOIN tb_barang ON tb_detail_transaksi.id_barang = tb_barang.id_barang";
 
@@ -489,8 +489,9 @@ namespace AplikasiMinimarket
                     {
                         while (reader.Read())
                         {
+                            string id = reader["id_detail_transaksi"].ToString();
+                            string barang = reader["id_barang"].ToString();
                             string nama = reader["nama_barang"].ToString();
-
 
                             // Ambil nilai harga dan sub_total, lalu format
                             if (int.TryParse(reader["harga_satuan"].ToString(), out int harga))
@@ -503,7 +504,7 @@ namespace AplikasiMinimarket
                                     {
                                         totalSub += sub;
                                         string formattedSub = "Rp. " + sub.ToString("N0");
-                                        Data_Transaksi.Rows.Add(nama, formattedHarga, qty, formattedSub);
+                                        Data_Transaksi.Rows.Add(id, barang, nama, formattedHarga, qty, formattedSub);
                                     }
                                 }
                             }

@@ -42,11 +42,6 @@
             label5 = new Label();
             ComboMember = new ComboBox();
             Data_Transaksi = new DataGridView();
-            Nama = new DataGridViewTextBoxColumn();
-            Harga = new DataGridViewTextBoxColumn();
-            Total = new DataGridViewTextBoxColumn();
-            Sub = new DataGridViewTextBoxColumn();
-            Hapus = new DataGridViewButtonColumn();
             TextJumlah = new TextBox();
             label6 = new Label();
             TextTotal2 = new TextBox();
@@ -72,6 +67,13 @@
             TextUser = new TextBox();
             TextMember = new TextBox();
             label14 = new Label();
+            No = new DataGridViewTextBoxColumn();
+            Kode = new DataGridViewTextBoxColumn();
+            Nama = new DataGridViewTextBoxColumn();
+            Harga = new DataGridViewTextBoxColumn();
+            Total = new DataGridViewTextBoxColumn();
+            Sub = new DataGridViewTextBoxColumn();
+            Hapus = new DataGridViewButtonColumn();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Data_Transaksi).BeginInit();
             ((System.ComponentModel.ISupportInitialize)Data_Dipending).BeginInit();
@@ -184,7 +186,7 @@
             // Data_Transaksi
             // 
             Data_Transaksi.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Data_Transaksi.Columns.AddRange(new DataGridViewColumn[] { Nama, Harga, Total, Sub, Hapus });
+            Data_Transaksi.Columns.AddRange(new DataGridViewColumn[] { No, Kode, Nama, Harga, Total, Sub, Hapus });
             Data_Transaksi.Location = new Point(12, 295);
             Data_Transaksi.Name = "Data_Transaksi";
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
@@ -200,43 +202,6 @@
             Data_Transaksi.RowsDefaultCellStyle = dataGridViewCellStyle2;
             Data_Transaksi.Size = new Size(1244, 646);
             Data_Transaksi.TabIndex = 10;
-            // 
-            // Nama
-            // 
-            Nama.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Nama.HeaderText = "Nama Barang";
-            Nama.MinimumWidth = 6;
-            Nama.Name = "Nama";
-            // 
-            // Harga
-            // 
-            Harga.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Harga.HeaderText = "Harga Satuan";
-            Harga.MinimumWidth = 6;
-            Harga.Name = "Harga";
-            // 
-            // Total
-            // 
-            Total.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Total.HeaderText = "Total";
-            Total.MinimumWidth = 6;
-            Total.Name = "Total";
-            // 
-            // Sub
-            // 
-            Sub.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Sub.HeaderText = "Sub Total";
-            Sub.MinimumWidth = 6;
-            Sub.Name = "Sub";
-            // 
-            // Hapus
-            // 
-            Hapus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Hapus.HeaderText = "";
-            Hapus.MinimumWidth = 6;
-            Hapus.Name = "Hapus";
-            Hapus.Text = "Hapus";
-            Hapus.UseColumnTextForButtonValue = true;
             // 
             // TextJumlah
             // 
@@ -461,6 +426,57 @@
             label14.TabIndex = 36;
             label14.Text = "Nama Member";
             // 
+            // No
+            // 
+            No.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            No.HeaderText = "No";
+            No.MinimumWidth = 6;
+            No.Name = "No";
+            // 
+            // Kode
+            // 
+            Kode.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Kode.HeaderText = "Kode Barang";
+            Kode.MinimumWidth = 6;
+            Kode.Name = "Kode";
+            // 
+            // Nama
+            // 
+            Nama.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Nama.HeaderText = "Nama Barang";
+            Nama.MinimumWidth = 6;
+            Nama.Name = "Nama";
+            // 
+            // Harga
+            // 
+            Harga.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Harga.HeaderText = "Harga Satuan";
+            Harga.MinimumWidth = 6;
+            Harga.Name = "Harga";
+            // 
+            // Total
+            // 
+            Total.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Total.HeaderText = "Total";
+            Total.MinimumWidth = 6;
+            Total.Name = "Total";
+            // 
+            // Sub
+            // 
+            Sub.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Sub.HeaderText = "Sub Total";
+            Sub.MinimumWidth = 6;
+            Sub.Name = "Sub";
+            // 
+            // Hapus
+            // 
+            Hapus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Hapus.HeaderText = "";
+            Hapus.MinimumWidth = 6;
+            Hapus.Name = "Hapus";
+            Hapus.Text = "Hapus";
+            Hapus.UseColumnTextForButtonValue = true;
+            // 
             // DataTransaksi
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
@@ -552,6 +568,8 @@
         private TextBox TextUser;
         private TextBox TextMember;
         private Label label14;
+        private DataGridViewTextBoxColumn No;
+        private DataGridViewTextBoxColumn Kode;
         private DataGridViewTextBoxColumn Nama;
         private DataGridViewTextBoxColumn Harga;
         private DataGridViewTextBoxColumn Total;
