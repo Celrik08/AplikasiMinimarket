@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -142,33 +142,27 @@ namespace AplikasiMinimarket
 
             isHandlingTextChanged = true;
 
-            int cursorPosition = ComboMember.SelectionStart;
-            string currentText = ComboMember.Text;
-
-            // Filter hanya berdasarkan IdMember
-            var filteredMembers = members.FindAll(m =>
-                m.IdMember.ToUpper().Contains(currentText.ToUpper()));
-
-            if (filteredMembers.Count == 1 &&
-                filteredMembers[0].IdMember.Equals(currentText, StringComparison.OrdinalIgnoreCase))
+            if (ComboMember.SelectedItem is Member selectedMember)
             {
+                // Menampilkan NamaMember di TextMember
+                TextMember.Text = selectedMember.NamaMember;
+
+                // Menutup dropdown ComboMember setelah item dipilih
                 ComboMember.DroppedDown = false;
             }
-            else
-            {
-                ComboMember.Items.Clear();
-                foreach (var member in filteredMembers)
-                {
-                    ComboMember.Items.Add(member); // Tetap menampilkan IdMember
-                }
-
-                ComboMember.DroppedDown = true;
-            }
-
-            ComboMember.Text = currentText;
-            ComboMember.SelectionStart = cursorPosition;
 
             isHandlingTextChanged = false;
+        }
+
+
+        private void ComboMember_DropDownClosed(object sender, EventArgs e)
+        {
+            // Periksa jika dropdown tertutup dan tidak ada item yang dipilih
+            if (ComboMember.SelectedItem == null && !string.IsNullOrEmpty(ComboMember.Text))
+            {
+                // Jika tidak ada yang dipilih dan ada teks, biarkan teks yang dicari
+                TextMember.Text = ComboMember.Text;
+            }
         }
 
 
@@ -209,10 +203,11 @@ namespace AplikasiMinimarket
 
         private void ComboMember_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (isHandlingTextChanged || isSaveButtonClicked) return;
+            if (isHandlingTextChanged) return;
 
             isHandlingTextChanged = true;
 
+            // Cek jika item yang dipilih adalah member yang valid
             if (ComboMember.SelectedItem is Member selectedMember)
             {
                 // Menampilkan NamaMember di TextMember
@@ -220,6 +215,11 @@ namespace AplikasiMinimarket
 
                 // Menutup dropdown ComboMember setelah item dipilih
                 ComboMember.DroppedDown = false;
+            }
+            else
+            {
+                // Jika tidak ada item yang valid, jangan tutup dropdown
+                ComboMember.DroppedDown = true;
             }
 
             isHandlingTextChanged = false;
