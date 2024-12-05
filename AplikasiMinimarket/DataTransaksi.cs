@@ -16,7 +16,7 @@ namespace AplikasiMinimarket
     public partial class DataTransaksi : Form
     {
         private List<Member> members = new List<Member>(); // Menyimpan daftar anggota untuk pencarian
-        private List<Barang> barangList = new List<Barang>(); // Menyimpan daftar barang untuk pencarian
+        private List<Barang> barangs = new List<Barang>(); // Menyimpan daftar barang untuk pencarian
         private long currentCount = 1;
         private int roleId;
         private string loggedInUsername;
@@ -110,7 +110,7 @@ namespace AplikasiMinimarket
         private void PerformBarang()
         {
             ComboBarang.Items.Clear();
-            barangList.Clear();
+            barangs.Clear();
 
             using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
@@ -128,7 +128,7 @@ namespace AplikasiMinimarket
                                 HargaBarang = (int)reader["harga_satuan"],
                                 Diskon = reader["diskon"] == DBNull.Value ? 0 : Convert.ToInt32(reader["diskon"]) // Langsung ambil diskon dari kolom diskon
                             };
-                            barangList.Add(barang);
+                            barangs.Add(barang);
                             ComboBarang.Items.Add(barang.IdBarang); // Menampilkan id_barang di ComboBox
                         }
                     }
@@ -138,31 +138,41 @@ namespace AplikasiMinimarket
 
         private void ComboMember_TextChanged(object sender, EventArgs e)
         {
-            if (isHandlingTextChanged || isSaveButtonClicked) return;
+            if (isHandlingTextChanged || isSaveButtonClicked || ComboMember.SelectedItem != null)
+            {
+                return;
+            }
 
             isHandlingTextChanged = true;
 
-            if (ComboMember.SelectedItem is Member selectedMember)
-            {
-                // Menampilkan NamaMember di TextMember
-                TextMember.Text = selectedMember.NamaMember;
+            int cursorPosition = ComboMember.SelectionStart;
+            string currentText = ComboMember.Text;
 
-                // Menutup dropdown ComboMember setelah item dipilih
+            var filteredMembers = members.FindAll(b =>
+                b.IdMember.ToUpper().Contains(currentText.ToUpper()));
+
+            // Jika hanya satu item yang cocok, tutup dropdown
+            if (filteredMembers.Count == 1 &&
+                (filteredMembers[0].IdMember.Equals(currentText, StringComparison.OrdinalIgnoreCase)))
+            {
                 ComboMember.DroppedDown = false;
+                ComboMember.SelectedItem = filteredMembers[0].IdMember; // Pilih item yang cocok
             }
+            else
+            {
+                // Perbarui item di ComboBox
+                ComboMember.Items.Clear();
+                foreach (var member in filteredMembers)
+                {
+                    ComboMember.Items.Add(member.IdMember);
+                }
+                ComboMember.DroppedDown = true; // Tampilkan dropdown jika lebih dari 1
+            }
+
+            ComboMember.Text = currentText;
+            ComboMember.SelectionStart = cursorPosition;
 
             isHandlingTextChanged = false;
-        }
-
-
-        private void ComboMember_DropDownClosed(object sender, EventArgs e)
-        {
-            // Periksa jika dropdown tertutup dan tidak ada item yang dipilih
-            if (ComboMember.SelectedItem == null && !string.IsNullOrEmpty(ComboMember.Text))
-            {
-                // Jika tidak ada yang dipilih dan ada teks, biarkan teks yang dicari
-                TextMember.Text = ComboMember.Text;
-            }
         }
 
 
@@ -175,13 +185,11 @@ namespace AplikasiMinimarket
             int cursorPosition = ComboBarang.SelectionStart;
             string currentText = ComboBarang.Text;
 
-            var filteredBarangs = barangList.FindAll(b =>
-                b.IdBarang.ToUpper().Contains(currentText.ToUpper()) ||
-                b.NamaBarang.ToUpper().Contains(currentText.ToUpper()));
+            var filteredBarangs = barangs.FindAll(b =>
+                b.IdBarang.ToUpper().Contains(currentText.ToUpper()));
 
             if (filteredBarangs.Count == 1 &&
-                (filteredBarangs[0].IdBarang.Equals(currentText, StringComparison.OrdinalIgnoreCase) ||
-                 filteredBarangs[0].NamaBarang.Equals(currentText, StringComparison.OrdinalIgnoreCase)))
+                (filteredBarangs[0].IdBarang.Equals(currentText, StringComparison.OrdinalIgnoreCase)))
             {
                 ComboBarang.DroppedDown = false;
             }
@@ -203,23 +211,31 @@ namespace AplikasiMinimarket
 
         private void ComboMember_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (isHandlingTextChanged) return;
+            if (isHandlingTextChanged || ComboMember.SelectedItem == null)
+            {
+                return;
+            }
 
             isHandlingTextChanged = true;
 
-            // Cek jika item yang dipilih adalah member yang valid
-            if (ComboMember.SelectedItem is Member selectedMember)
+            // Pastikan item yang dipilih valid
+            string selectedId = ComboMember.SelectedItem.ToString(); // Ambil teks dari item yang dipilih
+
+            var selectedMember = members.Find(m =>
+                string.Equals(m.IdMember, selectedId, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedMember != null)
             {
-                // Menampilkan NamaMember di TextMember
+                // Jika member ditemukan, tampilkan nama member
                 TextMember.Text = selectedMember.NamaMember;
 
-                // Menutup dropdown ComboMember setelah item dipilih
+                // Tutup dropdown setelah memilih item
                 ComboMember.DroppedDown = false;
             }
             else
             {
-                // Jika tidak ada item yang valid, jangan tutup dropdown
-                ComboMember.DroppedDown = true;
+                // Jika tidak ditemukan, kosongkan TextMember
+                TextMember.Text = string.Empty;
             }
 
             isHandlingTextChanged = false;
@@ -230,7 +246,7 @@ namespace AplikasiMinimarket
         {
             if (ComboBarang.SelectedItem is string selectedId)
             {
-                var selectedBarang = barangList.Find(b => b.IdBarang == selectedId);
+                var selectedBarang = barangs.Find(b => b.IdBarang == selectedId);
                 if (selectedBarang != null)
                 {
                     TextNama.Text = selectedBarang.NamaBarang;

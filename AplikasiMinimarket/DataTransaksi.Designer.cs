@@ -180,7 +180,6 @@
             ComboMember.Size = new Size(193, 28);
             ComboMember.TabIndex = 9;
             ComboMember.SelectedIndexChanged += ComboMember_SelectedIndexChanged;
-            ComboMember.DropDownClosed += ComboMember_DropDownClosed;
             ComboMember.TextChanged += ComboMember_TextChanged;
             ComboMember.KeyPress += ComboMember_KeyPress;
             // 
