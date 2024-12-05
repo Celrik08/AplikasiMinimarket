@@ -25,6 +25,7 @@ namespace AplikasiMinimarket
         private System.Windows.Forms.Timer timer;
         private bool isHandlingTextChanged = false; // Flag untuk menghindari loop rekrusif
         private bool isSaveButtonClicked = false; // Flag untuk menandakan jika tombol simpan sudah ditekan
+         int previousQty = 0;
         public DataTransaksi(int roleId, string loggedInUsername, string loggedInUserId)
         {
             InitializeComponent();
@@ -533,6 +534,120 @@ namespace AplikasiMinimarket
             TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
         }
 
+        private void Data_Transaksi_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            // Pastikan pengeditan terjadi di kolom qty
+            if (e.RowIndex >= 0 && e.ColumnIndex == 4) // Kolom qty berada di index ke-4
+            {
+                string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString() ?? "0";
+                if (int.TryParse(qtyText, out int qty))
+                {
+                    previousQty = qty; // Simpan nilai qty sebelumnya
+                }
+                else
+                {
+                    previousQty = 0; // Default jika parsing gagal
+                }
+            }
+        }
+
+        private void Data_Transaksi_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            // Pastikan perubahan terjadi di kolom qty
+            if (e.RowIndex >= 0 && e.ColumnIndex == 4) // Kolom qty berada di index ke-4
+            {
+                // Ambil data dari baris yang diedit
+                string idDetail = Data_Transaksi.Rows[e.RowIndex].Cells[0].Value.ToString(); // ID transaksi
+                string hargaText = Data_Transaksi.Rows[e.RowIndex].Cells[3].Value.ToString().Replace("Rp. ", "").Replace(".", ""); // Harga satuan
+                string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value.ToString(); // Qty baru
+                string idBarang = Data_Transaksi.Rows[e.RowIndex].Cells[1].Value.ToString(); // ID Barang
+
+                if (int.TryParse(qtyText, out int qty) && int.TryParse(hargaText, out int harga))
+                {
+                    // Hitung subtotal
+                    int subTotal = harga * qty;
+
+                    // Perbarui tampilan subtotal di DataGridView
+                    Data_Transaksi.Rows[e.RowIndex].Cells[5].Value = "Rp. " + subTotal.ToString("N0");
+
+                    // Perbarui database untuk transaksi
+                    UpdateDatabase(idDetail, harga, qty, subTotal);
+
+                    // Update stok di tabel tb_barang
+                    UpdateStokBarang(idBarang, qty);
+
+                    // Refresh total keseluruhan
+                    RefreshTotalSub();
+
+                    // Reset previousQty setelah selesai
+                    previousQty = 0;
+                }
+                else
+                {
+                    MessageBox.Show("Input tidak valid. Pastikan nilai qty dan harga benar.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
+        private void UpdateDatabase(string idDetail, int harga, int qty, int subTotal)
+        {
+            string query = "UPDATE tb_detail_transaksi SET qty = @qty, sub_total = @subTotal WHERE id_detail_transaksi = @idDetail";
+
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@qty", qty);
+                    cmd.Parameters.AddWithValue("@subTotal", subTotal);
+                    cmd.Parameters.AddWithValue("@idDetail", idDetail);
+
+                    cmd.ExecuteNonQuery(); // Jalankan perintah SQL
+                }
+            }
+        }
+
+        private void UpdateStokBarang(string idBarang, int qty)
+        {
+            string query = @"
+                UPDATE tb_barang
+                SET 
+                total_stok = total_stok + @previousQty - @qty
+                WHERE id_barang = @idBarang";
+
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@previousQty", previousQty); // Stok sebelum edit
+                    cmd.Parameters.AddWithValue("@qty", qty); // Stok setelah edit
+                    cmd.Parameters.AddWithValue("@idBarang", idBarang); // ID Barang
+
+                    cmd.ExecuteNonQuery(); // Jalankan perintah SQL
+                }
+            }
+        }
+
+        private void RefreshTotalSub()
+        {
+            int totalSub = 0;
+
+            foreach (DataGridViewRow row in Data_Transaksi.Rows)
+            {
+                if (row.Cells[5].Value != null)
+                {
+                    string subText = row.Cells[5].Value.ToString().Replace("Rp.", "").Replace(" ", "").Replace(".", ""); // Subtotal tanpa format Rp
+                    if (int.TryParse(subText, out int sub))
+                    {
+                        totalSub += sub; // Tambahkan subtotal
+                    }
+                }
+            }
+
+            // Tampilkan total ke TextTotal2
+            TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
+        }
 
         private void TextJumlah_TextChanged(object sender, EventArgs e)
         {

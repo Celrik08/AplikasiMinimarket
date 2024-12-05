@@ -202,6 +202,8 @@
             Data_Transaksi.RowsDefaultCellStyle = dataGridViewCellStyle2;
             Data_Transaksi.Size = new Size(1244, 646);
             Data_Transaksi.TabIndex = 10;
+            Data_Transaksi.CellBeginEdit += Data_Transaksi_CellBeginEdit;
+            Data_Transaksi.CellEndEdit += Data_Transaksi_CellEndEdit;
             // 
             // No
             // 
