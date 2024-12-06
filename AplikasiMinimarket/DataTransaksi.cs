@@ -366,9 +366,10 @@ namespace AplikasiMinimarket
 
             // Validasi input
             if (ComboMember.SelectedItem == null || ComboBarang.SelectedItem == null ||
-                string.IsNullOrWhiteSpace(TextTotal1.Text) || string.IsNullOrWhiteSpace(TextTotal2.Text))
+                string.IsNullOrWhiteSpace(TextTotal1.Text))
             {
                 MessageBox.Show("Id Member, Kode Barang, dan Total jangan dikosongkan", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSaveButtonClicked = false; // Reset status tombol
                 return;
             }
 
