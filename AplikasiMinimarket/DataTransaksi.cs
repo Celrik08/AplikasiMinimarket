@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -537,18 +538,30 @@ namespace AplikasiMinimarket
 
         private void Data_Transaksi_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
-            // Pastikan pengeditan terjadi di kolom qty
-            if (e.RowIndex >= 0 && e.ColumnIndex == 4) // Kolom qty berada di index ke-4
+            // Pastikan hanya kolom qty (kolom ke-4) yang bisa diedit
+            if (e.ColumnIndex != 4)
             {
-                string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString() ?? "0";
-                if (int.TryParse(qtyText, out int qty))
-                {
-                    previousQty = qty; // Simpan nilai qty sebelumnya
-                }
-                else
-                {
-                    previousQty = 0; // Default jika parsing gagal
-                }
+                e.Cancel = true; // Batalkan pengeditan
+                return;
+            }
+
+            // Periksa apakah baris kosong (tidak ada nilai di kolom pertama)
+            if (Data_Transaksi.Rows[e.RowIndex].Cells[0].Value == null ||
+                string.IsNullOrWhiteSpace(Data_Transaksi.Rows[e.RowIndex].Cells[0].Value.ToString()))
+            {
+                e.Cancel = true; // Batalkan pengeditan
+                return;
+            }
+
+            // Pastikan pengeditan terjadi di kolom qty
+            string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString() ?? "0";
+            if (int.TryParse(qtyText, out int qty))
+            {
+                previousQty = qty; // Simpan nilai qty sebelumnya
+            }
+            else
+            {
+                previousQty = 0; // Default jika parsing gagal
             }
         }
 
@@ -610,8 +623,7 @@ namespace AplikasiMinimarket
 
         private void Data_Transaksi_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
         {
-            // Pastikan pengeditan terjadi di kolom qty (kolom ke-4)
-            if (Data_Transaksi.CurrentCell.ColumnIndex == 4)
+            if (Data_Transaksi.CurrentCell.ColumnIndex == 4) // Hanya untuk kolom qty
             {
                 TextBox tb = e.Control as TextBox;
 
