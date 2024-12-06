@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace AplikasiMinimarket
         private System.Windows.Forms.Timer timer;
         private bool isHandlingTextChanged = false; // Flag untuk menghindari loop rekrusif
         private bool isSaveButtonClicked = false; // Flag untuk menandakan jika tombol simpan sudah ditekan
-         int previousQty = 0;
+        int previousQty = 0;
         public DataTransaksi(int roleId, string loggedInUsername, string loggedInUserId)
         {
             InitializeComponent();
@@ -332,12 +333,11 @@ namespace AplikasiMinimarket
                 }
             }
             // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
-            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) || e.KeyChar == '0')
             {
                 e.Handled = true; // Mencegah input selain angka dan kontrol
             }
         }
-
 
         private void TextSub_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -554,15 +554,30 @@ namespace AplikasiMinimarket
 
         private void Data_Transaksi_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            // Pastikan perubahan terjadi di kolom qty
-            if (e.RowIndex >= 0 && e.ColumnIndex == 4) // Kolom qty berada di index ke-4
+            // Pastikan perubahan terjadi di kolom qty (kolom ke-4)
+            if (e.RowIndex >= 0 && e.ColumnIndex == 4)
             {
-                // Ambil data dari baris yang diedit
+                // Ambil data dari sel yang diedit
+                string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString();
+
+                // Periksa jika kolom qty kosong
+                if (string.IsNullOrWhiteSpace(qtyText))
+                {
+                    // Tampilkan pesan kesalahan
+                    MessageBox.Show("Kolom Total jangan dikosongkan!", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    // Kembalikan nilai sebelumnya ke sel
+                    Data_Transaksi.Rows[e.RowIndex].Cells[4].Value = previousQty;
+
+                    return; // Hentikan proses lebih lanjut
+                }
+
+                // Ambil data lainnya
                 string idDetail = Data_Transaksi.Rows[e.RowIndex].Cells[0].Value.ToString(); // ID transaksi
                 string hargaText = Data_Transaksi.Rows[e.RowIndex].Cells[3].Value.ToString().Replace("Rp. ", "").Replace(".", ""); // Harga satuan
-                string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value.ToString(); // Qty baru
                 string idBarang = Data_Transaksi.Rows[e.RowIndex].Cells[1].Value.ToString(); // ID Barang
 
+                // Validasi input qty dan harga
                 if (int.TryParse(qtyText, out int qty) && int.TryParse(hargaText, out int harga))
                 {
                     // Hitung subtotal
@@ -586,7 +601,45 @@ namespace AplikasiMinimarket
                 else
                 {
                     MessageBox.Show("Input tidak valid. Pastikan nilai qty dan harga benar.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    // Kembalikan nilai sebelumnya jika input tidak valid
+                    Data_Transaksi.Rows[e.RowIndex].Cells[4].Value = previousQty;
                 }
+            }
+        }
+
+        private void Data_Transaksi_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            // Pastikan pengeditan terjadi di kolom qty (kolom ke-4)
+            if (Data_Transaksi.CurrentCell.ColumnIndex == 4)
+            {
+                TextBox tb = e.Control as TextBox;
+
+                if (tb != null)
+                {
+                    // Hapus event handler sebelumnya untuk menghindari duplikasi
+                    tb.KeyPress -= QtyColumn_KeyPress;
+
+                    // Tambahkan event handler untuk validasi input
+                    tb.KeyPress += QtyColumn_KeyPress;
+                }
+            }
+        }
+
+        private void QtyColumn_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Periksa apakah karakter yang ditekan adalah angka
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar)) // Bukan angka atau kontrol
+            {
+                e.Handled = true; // Mencegah input
+            }
+            else if (e.KeyChar == '0' && ((TextBox)sender).Text.Length == 0) // Cegah angka 0 sebagai karakter pertama
+            {
+                e.Handled = true; // Mencegah input
+            }
+            else if (char.IsWhiteSpace(e.KeyChar)) // Cegah spasi
+            {
+                e.Handled = true; // Mencegah input
             }
         }
 

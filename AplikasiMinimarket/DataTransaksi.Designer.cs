@@ -204,6 +204,7 @@
             Data_Transaksi.TabIndex = 10;
             Data_Transaksi.CellBeginEdit += Data_Transaksi_CellBeginEdit;
             Data_Transaksi.CellEndEdit += Data_Transaksi_CellEndEdit;
+            Data_Transaksi.EditingControlShowing += Data_Transaksi_EditingControlShowing;
             // 
             // No
             // 
