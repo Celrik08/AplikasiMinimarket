@@ -203,6 +203,7 @@
             Data_Transaksi.Size = new Size(1244, 646);
             Data_Transaksi.TabIndex = 10;
             Data_Transaksi.CellBeginEdit += Data_Transaksi_CellBeginEdit;
+            Data_Transaksi.CellContentClick += Data_Transaksi_CellContentClick;
             Data_Transaksi.CellEndEdit += Data_Transaksi_CellEndEdit;
             Data_Transaksi.EditingControlShowing += Data_Transaksi_EditingControlShowing;
             // 

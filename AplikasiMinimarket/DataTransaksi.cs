@@ -715,6 +715,73 @@ namespace AplikasiMinimarket
             TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
         }
 
+        private void Data_Transaksi_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == Data_Transaksi.Columns["Hapus"].Index && e.RowIndex >= 0)
+            {
+                // Cek apakah proses sedang berjalan
+                if (isSaveButtonClicked)
+                {
+                    MessageBox.Show("Proses sedang berjalan. Mohon tunggu.", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Tampilkan dialog konfirmasi
+                DialogResult result = MessageBox.Show("Anda yakin ingin menghapus data ini?", "Konfirmasi Hapus", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    // Tandai bahwa tombol hapus sudah ditekan
+                    isSaveButtonClicked = true;
+
+                    // Ambil data dari kolom yang sesuai
+                    string idDetail = Data_Transaksi.Rows[e.RowIndex].Cells[0].Value?.ToString();
+                    string idBarang = Data_Transaksi.Rows[e.RowIndex].Cells[1].Value?.ToString();
+                    string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString();
+
+                    if (idDetail != null && idBarang != null && int.TryParse(qtyText, out int qty))
+                    {
+                        using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+                        {
+                            conn.Open();
+
+                            // Perbarui total stok di tb_barang
+                            using (SqlCommand cmdUpdateStok = conn.CreateCommand())
+                            {
+                                cmdUpdateStok.CommandText = @"
+                            UPDATE tb_barang
+                            SET total_stok = total_stok + @qty
+                            WHERE id_barang = @id_barang";
+                                cmdUpdateStok.Parameters.AddWithValue("@qty", qty);
+                                cmdUpdateStok.Parameters.AddWithValue("@id_barang", idBarang);
+                                cmdUpdateStok.ExecuteNonQuery();
+                            }
+
+                            // Hapus data dari tb_detail_transaksi
+                            using (SqlCommand cmdDeleteDetail = conn.CreateCommand())
+                            {
+                                cmdDeleteDetail.CommandText = "DELETE FROM tb_detail_transaksi WHERE id_detail_transaksi = @id_detail";
+                                cmdDeleteDetail.Parameters.AddWithValue("@id_detail", idDetail);
+                                cmdDeleteDetail.ExecuteNonQuery();
+                            }
+                        }
+
+                        MessageBox.Show("Data berhasil dihapus!", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Muat ulang data ke DataGridView
+                        LoadDataToDataGridView();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Data tidak valid. Tidak dapat menghapus data.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    // Nonaktifkan flag setelah proses selesai
+                    isSaveButtonClicked = false;
+                }
+            }
+        }
+
         private void TextJumlah_TextChanged(object sender, EventArgs e)
         {
             if (isHandlingTextChanged) return;
