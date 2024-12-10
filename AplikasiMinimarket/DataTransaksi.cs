@@ -367,9 +367,9 @@ namespace AplikasiMinimarket
 
             // Validasi input
             if (ComboMember.SelectedItem == null || ComboBarang.SelectedItem == null ||
-                string.IsNullOrWhiteSpace(TextTotal1.Text))
+                string.IsNullOrWhiteSpace(TextTotal1.Text) || string.IsNullOrWhiteSpace(TextSub.Text))
             {
-                MessageBox.Show("Id Member, Kode Barang, dan Total jangan dikosongkan", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Id Member, Kode Barang, Total, dan Sub Total jangan dikosongkan", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 isSaveButtonClicked = false; // Reset status tombol
                 return;
             }
@@ -719,6 +719,17 @@ namespace AplikasiMinimarket
         {
             if (e.ColumnIndex == Data_Transaksi.Columns["Hapus"].Index && e.RowIndex >= 0)
             {
+                // Cek apakah baris memiliki data lengkap
+                string idDetail = Data_Transaksi.Rows[e.RowIndex].Cells[0].Value?.ToString();
+                string idBarang = Data_Transaksi.Rows[e.RowIndex].Cells[1].Value?.ToString();
+                string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString();
+
+                if (string.IsNullOrEmpty(idDetail) || string.IsNullOrEmpty(idBarang) || string.IsNullOrEmpty(qtyText))
+                {
+                    // Tidak melakukan apa-apa jika salah satu kolom di baris kosong
+                    return;
+                }
+
                 // Cek apakah proses sedang berjalan
                 if (isSaveButtonClicked)
                 {
@@ -734,12 +745,7 @@ namespace AplikasiMinimarket
                     // Tandai bahwa tombol hapus sudah ditekan
                     isSaveButtonClicked = true;
 
-                    // Ambil data dari kolom yang sesuai
-                    string idDetail = Data_Transaksi.Rows[e.RowIndex].Cells[0].Value?.ToString();
-                    string idBarang = Data_Transaksi.Rows[e.RowIndex].Cells[1].Value?.ToString();
-                    string qtyText = Data_Transaksi.Rows[e.RowIndex].Cells[4].Value?.ToString();
-
-                    if (idDetail != null && idBarang != null && int.TryParse(qtyText, out int qty))
+                    if (int.TryParse(qtyText, out int qty))
                     {
                         using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                         {
@@ -749,9 +755,9 @@ namespace AplikasiMinimarket
                             using (SqlCommand cmdUpdateStok = conn.CreateCommand())
                             {
                                 cmdUpdateStok.CommandText = @"
-                            UPDATE tb_barang
-                            SET total_stok = total_stok + @qty
-                            WHERE id_barang = @id_barang";
+                                UPDATE tb_barang
+                                SET total_stok = total_stok + @qty
+                                WHERE id_barang = @id_barang";
                                 cmdUpdateStok.Parameters.AddWithValue("@qty", qty);
                                 cmdUpdateStok.Parameters.AddWithValue("@id_barang", idBarang);
                                 cmdUpdateStok.ExecuteNonQuery();
@@ -770,10 +776,6 @@ namespace AplikasiMinimarket
 
                         // Muat ulang data ke DataGridView
                         LoadDataToDataGridView();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Data tidak valid. Tidak dapat menghapus data.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
                     // Nonaktifkan flag setelah proses selesai
