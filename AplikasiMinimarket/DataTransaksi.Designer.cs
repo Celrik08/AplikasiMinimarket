@@ -300,6 +300,7 @@
             TextTotal3.Name = "TextTotal3";
             TextTotal3.Size = new Size(184, 28);
             TextTotal3.TabIndex = 16;
+            TextTotal3.KeyPress += TextTotal3_KeyPress;
             // 
             // label8
             // 
@@ -320,6 +321,7 @@
             BtnSave.TabIndex = 17;
             BtnSave.Text = "Save";
             BtnSave.UseVisualStyleBackColor = true;
+            BtnSave.Click += BtnSave_Click;
             // 
             // label9
             // 

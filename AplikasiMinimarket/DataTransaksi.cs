@@ -333,8 +333,8 @@ namespace AplikasiMinimarket
                     TextSub.Text = "Input tidak valid!";
                 }
             }
-            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
-            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) || e.KeyChar == '0')
+            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan, dan mencegah angka '0' di awal input
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) || TextTotal1.Text.Length == 0 && e.KeyChar == '0')
             {
                 e.Handled = true; // Mencegah input selain angka dan kontrol
             }
@@ -346,18 +346,17 @@ namespace AplikasiMinimarket
             if (e.KeyChar == (char)13)
             {
                 e.Handled = true;
-                PerfromTransaksi();
+                PerfromDetailTransaksi();
             }
         }
 
 
         private void BtnKlik_Click(object sender, EventArgs e)
         {
-            PerfromTransaksi();
+            PerfromDetailTransaksi();
         }
 
-
-        private void PerfromTransaksi()
+        private void PerfromDetailTransaksi()
         {
             // Cegah eksekusi simultan
             if (isHandlingTextChanged || isSaveButtonClicked)
@@ -455,7 +454,7 @@ namespace AplikasiMinimarket
                     }
 
                     LoadDataToDataGridView();
-                    ResetKomponen();
+                    ResetDetailTransaksi();
                 }
             }
 
@@ -464,7 +463,7 @@ namespace AplikasiMinimarket
             isSaveButtonClicked = false; // Reset status klik tombol
         }
 
-        private void ResetKomponen()
+        private void ResetDetailTransaksi()
         {
             ComboBarang.SelectedIndex = -1;
             TextNama.Clear();
@@ -854,6 +853,8 @@ namespace AplikasiMinimarket
 
                     // Tampilkan hasil di TextTotal3
                     TextTotal3.Text = "Rp. " + total3.ToString("N0");
+
+                    TextTotal3.Focus();
                 }
                 else
                 {
@@ -864,6 +865,92 @@ namespace AplikasiMinimarket
                 // Cegah bunyi "ding" ketika Enter ditekan
                 e.Handled = true;
             }
+        }
+
+        private void TextTotal3_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Jika yanbg di tekan adalah tombol enter
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true;
+                PerfromTransaksi();
+            }
+        }
+
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            PerfromTransaksi();
+        }
+
+        private void PerfromTransaksi()
+        {
+            // Cegah eksekusi simultan
+            if (isHandlingTextChanged || isSaveButtonClicked)
+                return;
+
+            isSaveButtonClicked = true;
+
+            // Validasi untuk TextJumlah (tidak boleh kosong) dan validasi untuk TextTotal3 tidak boleh minus
+            string jumlahText = TextJumlah.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+            string total3Text = TextTotal3.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+            if (string.IsNullOrWhiteSpace(jumlahText) || jumlahText == "0" || int.TryParse(total3Text, out int total3Value) && total3Value < 0)
+            {
+                MessageBox.Show("Jumlah Bayar tidak boleh kosong dan Total Kembalian tidak boleh minus!", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSaveButtonClicked = false;
+                return;
+            }
+
+            // Proses transaksi jika semua validasi lulus
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+            {
+                conn.Open();
+
+                // Hapus semua data dari tb_detail_transaksi berdasarkan id_transaksi
+                using (SqlCommand deleteDetailTransaksiCmd = new SqlCommand("DELETE FROM tb_detail_transaksi WHERE id_transaksi = @id_transaksi", conn))
+                {
+                    deleteDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+                    deleteDetailTransaksiCmd.ExecuteNonQuery();
+                }
+
+                // Perbarui data di tb_transaksi
+                using (SqlCommand updateTransaksiCmd = new SqlCommand("UPDATE tb_transaksi SET grand_total = @grand_total, id_status_transaksi = @id_status_transaksi WHERE id_transaksi = @id_transaksi", conn))
+                {
+                    // Hitung grand_total dari TextTotal2
+                    string grandTotalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+                    int grandTotal = int.Parse(grandTotalText);
+
+                    updateTransaksiCmd.Parameters.AddWithValue("@grand_total", grandTotal);
+                    updateTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 1); // Ubah status transaksi menjadi 1
+                    updateTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+
+                    updateTransaksiCmd.ExecuteNonQuery();
+                }
+
+                // Perbarui nomor transaksi setelah berhasil menyimpan
+                noOtomatis();
+
+                // Perbarui tampilan dan reset komponen
+                LoadDataToDataGridView();
+                ResetTransaksi();
+            }
+
+            MessageBox.Show("Transaksi berhasil diperbarui!", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            isSaveButtonClicked = false; // Reset status klik tombol
+        }
+
+        private void ResetTransaksi()
+        {
+            ComboMember.SelectedIndex = -1;
+            TextMember.Clear();
+            ComboBarang.SelectedIndex = -1;
+            TextNama.Clear();
+            TextHarga.Clear();
+            TextTotal1.Clear();
+            TextSub.Clear();
+            TextTotal2.Text = "Rp. 0";
+            TextJumlah.Clear();
+            TextTotal3.Clear();
         }
     }
 }
