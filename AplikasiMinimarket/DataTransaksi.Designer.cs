@@ -74,6 +74,8 @@
             TextUser = new TextBox();
             TextMember = new TextBox();
             label14 = new Label();
+            TextDiskon = new TextBox();
+            label15 = new Label();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Data_Transaksi).BeginInit();
             ((System.ComponentModel.ISupportInitialize)Data_Dipending).BeginInit();
@@ -260,7 +262,7 @@
             // 
             // TextJumlah
             // 
-            TextJumlah.Location = new Point(1429, 770);
+            TextJumlah.Location = new Point(1429, 804);
             TextJumlah.Name = "TextJumlah";
             TextJumlah.Size = new Size(184, 28);
             TextJumlah.TabIndex = 12;
@@ -271,7 +273,7 @@
             // 
             label6.AutoSize = true;
             label6.ForeColor = Color.Cornsilk;
-            label6.Location = new Point(1284, 773);
+            label6.Location = new Point(1284, 807);
             label6.Name = "label6";
             label6.Size = new Size(108, 20);
             label6.TabIndex = 11;
@@ -283,6 +285,7 @@
             TextTotal2.Name = "TextTotal2";
             TextTotal2.Size = new Size(184, 28);
             TextTotal2.TabIndex = 14;
+            TextTotal2.TextChanged += TextTotal2_TextChanged;
             // 
             // label7
             // 
@@ -296,7 +299,7 @@
             // 
             // TextTotal3
             // 
-            TextTotal3.Location = new Point(1429, 804);
+            TextTotal3.Location = new Point(1429, 838);
             TextTotal3.Name = "TextTotal3";
             TextTotal3.Size = new Size(184, 28);
             TextTotal3.TabIndex = 16;
@@ -306,7 +309,7 @@
             // 
             label8.AutoSize = true;
             label8.ForeColor = Color.Cornsilk;
-            label8.Location = new Point(1284, 807);
+            label8.Location = new Point(1284, 841);
             label8.Name = "label8";
             label8.Size = new Size(128, 20);
             label8.TabIndex = 15;
@@ -315,7 +318,7 @@
             // BtnSave
             // 
             BtnSave.ForeColor = SystemColors.ControlText;
-            BtnSave.Location = new Point(1649, 866);
+            BtnSave.Location = new Point(1643, 899);
             BtnSave.Name = "BtnSave";
             BtnSave.Size = new Size(94, 29);
             BtnSave.TabIndex = 17;
@@ -483,12 +486,31 @@
             label14.TabIndex = 36;
             label14.Text = "Nama Member";
             // 
+            // TextDiskon
+            // 
+            TextDiskon.Location = new Point(1429, 770);
+            TextDiskon.Name = "TextDiskon";
+            TextDiskon.Size = new Size(184, 28);
+            TextDiskon.TabIndex = 38;
+            // 
+            // label15
+            // 
+            label15.AutoSize = true;
+            label15.ForeColor = Color.Cornsilk;
+            label15.Location = new Point(1284, 773);
+            label15.Name = "label15";
+            label15.Size = new Size(126, 20);
+            label15.TabIndex = 37;
+            label15.Text = "Diskon Member";
+            // 
             // DataTransaksi
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(122, 178, 211);
             ClientSize = new Size(1924, 1055);
+            Controls.Add(TextDiskon);
+            Controls.Add(label15);
             Controls.Add(label14);
             Controls.Add(TextMember);
             Controls.Add(TextUser);
@@ -581,5 +603,7 @@
         private DataGridViewTextBoxColumn Total;
         private DataGridViewTextBoxColumn Sub;
         private DataGridViewButtonColumn Hapus;
+        private TextBox TextDiskon;
+        private Label label15;
     }
 }

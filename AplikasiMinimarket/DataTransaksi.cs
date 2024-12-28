@@ -244,7 +244,6 @@ namespace AplikasiMinimarket
             isHandlingTextChanged = false;
         }
 
-
         private void ComboBarang_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (ComboBarang.SelectedItem is string selectedId)
@@ -783,6 +782,54 @@ namespace AplikasiMinimarket
             }
         }
 
+        private void TextTotal2_TextChanged(object sender, EventArgs e)
+        {
+            // Panggil fungsi untuk menghitung diskon setiap kali teks berubah
+            ApplyDiscountBasedOnTotalAndMember();
+        }
+
+        private void ApplyDiscountBasedOnTotalAndMember()
+        {
+            // Ambil id_member dari ComboMember
+            string idMember = ComboMember.Text;
+
+            // Ambil nilai total dari TextTotal2
+            string totalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+
+            if (int.TryParse(totalText, out int totalTransaksi))
+            {
+                double discount = 0;
+
+                // Periksa diskon berdasarkan id_member dan total transaksi
+                if (idMember == "0" || totalTransaksi < 50000)
+                {
+                    TextDiskon.Text = "Rp. 0";
+                    return; // Keluar dari fungsi
+                }
+
+                // Periksa diskon berdasarkan total transaksi
+                if (totalTransaksi <= 199000)
+                {
+                    discount = totalTransaksi * 0.02; // Diskon 
+                }
+                else if (totalTransaksi >= 200000)
+                {
+                    discount = totalTransaksi * 0.05; // Diskon 5%
+                }
+
+                // Hitung total setelah diskon
+                double discountedTotal = totalTransaksi - discount;
+
+                // Update TextDiskon
+                TextDiskon.Text = "Rp. " + discountedTotal.ToString("N0");
+            }
+            else
+            {
+                // Jika id_member adalah 0 atau total transaksi di bawah 50000
+                TextDiskon.Text = "Rp. 0";
+            }
+        }
+
         private void TextJumlah_TextChanged(object sender, EventArgs e)
         {
             if (isHandlingTextChanged) return;
@@ -800,7 +847,7 @@ namespace AplikasiMinimarket
             }
 
             // Ambil angka setelah "Rp. " dan hapus titik sebelumnya jika ada
-            string angkaText = currentText.Replace("Rp. ", "").Replace(" ", "").Replace(".", "").Trim();
+            string angkaText = currentText.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
 
             // Cek apakah input setelah "Rp. " valid dan tidak diawali dengan 0
             if (angkaText.Length > 0 && angkaText[0] == '0' && angkaText.Length > 1)
@@ -844,12 +891,23 @@ namespace AplikasiMinimarket
             if (e.KeyChar == (char)Keys.Enter) // Periksa apakah tombol Enter ditekan
             {
                 // Ambil nilai dari TextJumlah dan TextTotal2
-                string jumlahText = TextJumlah.Text.Replace("Rp. ", "").Replace(".", "").Trim();
-                string total2Text = TextTotal2.Text.Replace("Rp. ", "").Replace(".", "").Trim();
+                string jumlahText = TextJumlah.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
+                string total2Text = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
+                string discountText = TextDiskon.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
 
                 if (long.TryParse(jumlahText, out long jumlah) && long.TryParse(total2Text, out long total2))
                 {
-                    long total3 = jumlah - total2; // Lakukan pengurangan
+                    long total3;
+
+                    // Tentukan pengurangan berdasarkan nilai TextDiskon
+                    if (long.TryParse(discountText, out long diskon) && diskon > 0)
+                    {
+                        total3 = jumlah - diskon; // Pengurangan dengan diskon
+                    }
+                    else
+                    {
+                        total3 = jumlah - total2; // Pengurangan dengan total transaksi
+                    }
 
                     // Tampilkan hasil di TextTotal3
                     TextTotal3.Text = "Rp. " + total3.ToString("N0");
@@ -912,18 +970,45 @@ namespace AplikasiMinimarket
                     deleteDetailTransaksiCmd.ExecuteNonQuery();
                 }
 
+                // Hitung grand_total dari TextTotal2
+                string grandTotalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+                int grandTotal = int.Parse(grandTotalText); // Deklarasikan grandTotal di sini
+
                 // Perbarui data di tb_transaksi
                 using (SqlCommand updateTransaksiCmd = new SqlCommand("UPDATE tb_transaksi SET grand_total = @grand_total, id_status_transaksi = @id_status_transaksi WHERE id_transaksi = @id_transaksi", conn))
                 {
-                    // Hitung grand_total dari TextTotal2
-                    string grandTotalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
-                    int grandTotal = int.Parse(grandTotalText);
-
                     updateTransaksiCmd.Parameters.AddWithValue("@grand_total", grandTotal);
                     updateTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 1); // Ubah status transaksi menjadi 1
                     updateTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
 
                     updateTransaksiCmd.ExecuteNonQuery();
+                }
+
+                // Tambahkan logika untuk pemberian poin
+                string idMemberStr = ComboMember.Text; // Ambil id_member dari ComboMember
+
+                if (!string.IsNullOrWhiteSpace(idMemberStr) && idMemberStr != "0") // Cek jika id_member tidak kosong dan bukan "0"
+                {
+                    // Hitung poin berdasarkan grand_total
+                    int poin = 0;
+                    
+                    if (grandTotal >= 50000 && grandTotal <= 199000)
+                    {
+                        poin = 400; // Poin untuk transaksi antara 50.000 dan 199.000
+                    }
+                    else if (grandTotal >= 200000)
+                    {
+                        poin = 1000; // Poin untuk transaksi di atas 200.000
+                    }
+
+                    // Update poin ke tabel tb_member
+                    using (SqlCommand updateMemberCmd = new SqlCommand("UPDATE tb_member SET point = point + @point WHERE id_member = @id_member", conn))
+                    {
+                        updateMemberCmd.Parameters.AddWithValue("@point", poin);
+                        updateMemberCmd.Parameters.AddWithValue("@id_member", idMemberStr);
+
+                        updateMemberCmd.ExecuteNonQuery();
+                    }
                 }
 
                 // Perbarui nomor transaksi setelah berhasil menyimpan
