@@ -991,7 +991,7 @@ namespace AplikasiMinimarket
                 {
                     // Hitung poin berdasarkan grand_total
                     int poin = 0;
-                    
+
                     if (grandTotal >= 50000 && grandTotal <= 199000)
                     {
                         poin = 400; // Poin untuk transaksi antara 50.000 dan 199.000
