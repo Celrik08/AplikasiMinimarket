@@ -24,6 +24,36 @@ namespace AplikasiMinimarket
             this.loggedInUserId = loggedInUserId;
 
             User.Text = GetRoleName(roleId);
+
+            // Ganti pengecekan level dengan pengecekan roleId
+            if (roleId == 1)
+            {
+                DataUser.Visible = true;
+                DataTransaksi.Visible = false;
+                DataGudang.Visible = false;
+            }
+
+            else if (roleId == 2)
+            {
+                DataUser.Visible = false;
+                DataTransaksi.Visible = false;
+                DataGudang.Visible = true;
+            }
+
+            else if (roleId == 3)
+            {
+                DataUser.Visible = false;
+                DataTransaksi.Visible = false;
+                DataGudang.Visible = true;
+            }
+            else if (roleId == 4)
+            {
+                DataUser.Visible = false;
+                DataTransaksi.Visible = true;
+                DataGudang.Visible = false;
+            }
+
+            User.Text = GetRoleName(roleId);
         }
 
         private string GetRoleName(int roleId)
@@ -99,9 +129,7 @@ namespace AplikasiMinimarket
 
         private void Back_Click(object sender, EventArgs e)
         {
-            FormLogin FL = new FormLogin();
-            FL.Show();
-            Hide();
+            Application.Exit();
         }
 
         private void DataLogin_Click(object sender, EventArgs e)
@@ -123,7 +151,6 @@ namespace AplikasiMinimarket
             DataTransaksi DT = new DataTransaksi(roleId, loggedInUsername, loggedInUserId);
             DT.Show();
             Hide();
-
         }
     }
 }

@@ -30,6 +30,10 @@
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             panel1 = new Panel();
             BtnBack = new Button();
             label1 = new Label();
@@ -40,7 +44,6 @@
             TextJam = new TextBox();
             label4 = new Label();
             label5 = new Label();
-            ComboMember = new ComboBox();
             Data_Transaksi = new DataGridView();
             No = new DataGridViewTextBoxColumn();
             Kode = new DataGridViewTextBoxColumn();
@@ -51,18 +54,17 @@
             Hapus = new DataGridViewButtonColumn();
             TextJumlah = new TextBox();
             label6 = new Label();
-            TextTotal2 = new TextBox();
+            TextTotal1 = new TextBox();
             label7 = new Label();
-            TextTotal3 = new TextBox();
+            TextTotal2 = new TextBox();
             label8 = new Label();
             BtnSave = new Button();
             label9 = new Label();
-            ComboBarang = new ComboBox();
             TextNama = new TextBox();
             label10 = new Label();
             TextHarga = new TextBox();
             label11 = new Label();
-            TextTotal1 = new TextBox();
+            TextQty = new TextBox();
             label12 = new Label();
             TextSub = new TextBox();
             label13 = new Label();
@@ -71,11 +73,17 @@
             Data_Dipending = new DataGridView();
             Id = new DataGridViewTextBoxColumn();
             Member = new DataGridViewTextBoxColumn();
+            Status = new DataGridViewTextBoxColumn();
             TextUser = new TextBox();
             TextMember = new TextBox();
             label14 = new Label();
             TextDiskon = new TextBox();
             label15 = new Label();
+            TextIdMember = new TextBox();
+            TextIdBarang = new TextBox();
+            BtnTambahMember = new Button();
+            BtnTambahBarang = new Button();
+            label16 = new Label();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Data_Transaksi).BeginInit();
             ((System.ComponentModel.ISupportInitialize)Data_Dipending).BeginInit();
@@ -174,34 +182,25 @@
             label5.TabIndex = 8;
             label5.Text = "Id Member";
             // 
-            // ComboMember
-            // 
-            ComboMember.FormattingEnabled = true;
-            ComboMember.Location = new Point(496, 110);
-            ComboMember.Name = "ComboMember";
-            ComboMember.Size = new Size(193, 28);
-            ComboMember.TabIndex = 9;
-            ComboMember.SelectedIndexChanged += ComboMember_SelectedIndexChanged;
-            ComboMember.TextChanged += ComboMember_TextChanged;
-            ComboMember.KeyPress += ComboMember_KeyPress;
-            // 
             // Data_Transaksi
             // 
+            dataGridViewCellStyle1.ForeColor = Color.Black;
+            Data_Transaksi.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             Data_Transaksi.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             Data_Transaksi.Columns.AddRange(new DataGridViewColumn[] { No, Kode, Nama, Harga, Total, Sub, Hapus });
             Data_Transaksi.Location = new Point(12, 295);
             Data_Transaksi.Name = "Data_Transaksi";
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            Data_Transaksi.RowHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            Data_Transaksi.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
             Data_Transaksi.RowHeadersWidth = 51;
-            dataGridViewCellStyle2.ForeColor = Color.Black;
-            Data_Transaksi.RowsDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle3.ForeColor = Color.Black;
+            Data_Transaksi.RowsDefaultCellStyle = dataGridViewCellStyle3;
             Data_Transaksi.Size = new Size(1244, 646);
             Data_Transaksi.TabIndex = 10;
             Data_Transaksi.CellBeginEdit += Data_Transaksi_CellBeginEdit;
@@ -279,31 +278,31 @@
             label6.TabIndex = 11;
             label6.Text = "Jumlah Bayar";
             // 
-            // TextTotal2
+            // TextTotal1
             // 
-            TextTotal2.Location = new Point(1429, 736);
-            TextTotal2.Name = "TextTotal2";
-            TextTotal2.Size = new Size(184, 28);
-            TextTotal2.TabIndex = 14;
-            TextTotal2.TextChanged += TextTotal2_TextChanged;
+            TextTotal1.Location = new Point(1429, 770);
+            TextTotal1.Name = "TextTotal1";
+            TextTotal1.Size = new Size(184, 28);
+            TextTotal1.TabIndex = 14;
+            TextTotal1.TextChanged += TextTotal1_TextChanged;
             // 
             // label7
             // 
             label7.AutoSize = true;
             label7.ForeColor = Color.Cornsilk;
-            label7.Location = new Point(1284, 739);
+            label7.Location = new Point(1284, 773);
             label7.Name = "label7";
             label7.Size = new Size(94, 20);
             label7.TabIndex = 13;
             label7.Text = "Total Harga";
             // 
-            // TextTotal3
+            // TextTotal2
             // 
-            TextTotal3.Location = new Point(1429, 838);
-            TextTotal3.Name = "TextTotal3";
-            TextTotal3.Size = new Size(184, 28);
-            TextTotal3.TabIndex = 16;
-            TextTotal3.KeyPress += TextTotal3_KeyPress;
+            TextTotal2.Location = new Point(1429, 838);
+            TextTotal2.Name = "TextTotal2";
+            TextTotal2.Size = new Size(184, 28);
+            TextTotal2.TabIndex = 16;
+            TextTotal2.KeyPress += TextTotal3_KeyPress;
             // 
             // label8
             // 
@@ -336,20 +335,9 @@
             label9.TabIndex = 18;
             label9.Text = "Kode Barang";
             // 
-            // ComboBarang
-            // 
-            ComboBarang.FormattingEnabled = true;
-            ComboBarang.Location = new Point(157, 185);
-            ComboBarang.Name = "ComboBarang";
-            ComboBarang.Size = new Size(193, 28);
-            ComboBarang.TabIndex = 22;
-            ComboBarang.SelectedIndexChanged += ComboBarang_SelectedIndexChanged;
-            ComboBarang.TextChanged += ComboBarang_TextChanged;
-            ComboBarang.KeyPress += ComboBarang_KeyPress;
-            // 
             // TextNama
             // 
-            TextNama.Location = new Point(496, 185);
+            TextNama.Location = new Point(517, 185);
             TextNama.Name = "TextNama";
             TextNama.Size = new Size(193, 28);
             TextNama.TabIndex = 24;
@@ -358,7 +346,7 @@
             // 
             label10.AutoSize = true;
             label10.ForeColor = Color.Cornsilk;
-            label10.Location = new Point(360, 194);
+            label10.Location = new Point(403, 188);
             label10.Name = "label10";
             label10.Size = new Size(108, 20);
             label10.TabIndex = 23;
@@ -366,7 +354,7 @@
             // 
             // TextHarga
             // 
-            TextHarga.Location = new Point(819, 191);
+            TextHarga.Location = new Point(839, 185);
             TextHarga.Name = "TextHarga";
             TextHarga.Size = new Size(193, 28);
             TextHarga.TabIndex = 26;
@@ -375,19 +363,19 @@
             // 
             label11.AutoSize = true;
             label11.ForeColor = Color.Cornsilk;
-            label11.Location = new Point(695, 194);
+            label11.Location = new Point(727, 188);
             label11.Name = "label11";
             label11.Size = new Size(106, 20);
             label11.TabIndex = 25;
             label11.Text = "Harga Satuan";
             // 
-            // TextTotal1
+            // TextQty
             // 
-            TextTotal1.Location = new Point(157, 219);
-            TextTotal1.Name = "TextTotal1";
-            TextTotal1.Size = new Size(193, 28);
-            TextTotal1.TabIndex = 28;
-            TextTotal1.KeyPress += TextTotal1_KeyPress;
+            TextQty.Location = new Point(157, 219);
+            TextQty.Name = "TextQty";
+            TextQty.Size = new Size(193, 28);
+            TextQty.TabIndex = 28;
+            TextQty.KeyPress += TextQty_KeyPress;
             // 
             // label12
             // 
@@ -395,13 +383,13 @@
             label12.ForeColor = Color.Cornsilk;
             label12.Location = new Point(12, 225);
             label12.Name = "label12";
-            label12.Size = new Size(46, 20);
+            label12.Size = new Size(36, 20);
             label12.TabIndex = 27;
-            label12.Text = "Total";
+            label12.Text = "Qty";
             // 
             // TextSub
             // 
-            TextSub.Location = new Point(496, 219);
+            TextSub.Location = new Point(517, 219);
             TextSub.Name = "TextSub";
             TextSub.Size = new Size(193, 28);
             TextSub.TabIndex = 30;
@@ -411,7 +399,7 @@
             // 
             label13.AutoSize = true;
             label13.ForeColor = Color.Cornsilk;
-            label13.Location = new Point(360, 225);
+            label13.Location = new Point(403, 222);
             label13.Name = "label13";
             label13.Size = new Size(79, 20);
             label13.TabIndex = 29;
@@ -426,6 +414,7 @@
             BtnDipending.TabIndex = 31;
             BtnDipending.Text = "Dipending";
             BtnDipending.UseVisualStyleBackColor = true;
+            BtnDipending.Click += BtnDipending_Click;
             // 
             // BtnKlik
             // 
@@ -440,13 +429,33 @@
             // 
             // Data_Dipending
             // 
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle4.ForeColor = SystemColors.Window;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            Data_Dipending.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
             Data_Dipending.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Data_Dipending.Columns.AddRange(new DataGridViewColumn[] { Id, Member });
-            Data_Dipending.Location = new Point(1284, 70);
+            Data_Dipending.Columns.AddRange(new DataGridViewColumn[] { Id, Member, Status });
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = SystemColors.Window;
+            dataGridViewCellStyle5.Font = new Font("Times New Roman", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle5.ForeColor = Color.Cornsilk;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.False;
+            Data_Dipending.DefaultCellStyle = dataGridViewCellStyle5;
+            Data_Dipending.GridColor = SystemColors.InactiveCaptionText;
+            Data_Dipending.Location = new Point(1284, 91);
             Data_Dipending.Name = "Data_Dipending";
             Data_Dipending.RowHeadersWidth = 51;
+            dataGridViewCellStyle6.ForeColor = Color.Black;
+            Data_Dipending.RowsDefaultCellStyle = dataGridViewCellStyle6;
             Data_Dipending.Size = new Size(597, 393);
             Data_Dipending.TabIndex = 33;
+            Data_Dipending.CellClick += Data_Dipending_CellClick;
             // 
             // Id
             // 
@@ -462,16 +471,23 @@
             Member.MinimumWidth = 6;
             Member.Name = "Member";
             // 
+            // Status
+            // 
+            Status.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Status.HeaderText = "Status Transaksi";
+            Status.MinimumWidth = 6;
+            Status.Name = "Status";
+            // 
             // TextUser
             // 
-            TextUser.Location = new Point(819, 110);
+            TextUser.Location = new Point(866, 111);
             TextUser.Name = "TextUser";
             TextUser.Size = new Size(193, 28);
             TextUser.TabIndex = 34;
             // 
             // TextMember
             // 
-            TextMember.Location = new Point(819, 72);
+            TextMember.Location = new Point(866, 73);
             TextMember.Name = "TextMember";
             TextMember.Size = new Size(193, 28);
             TextMember.TabIndex = 35;
@@ -480,7 +496,7 @@
             // 
             label14.AutoSize = true;
             label14.ForeColor = Color.Cornsilk;
-            label14.Location = new Point(695, 75);
+            label14.Location = new Point(742, 76);
             label14.Name = "label14";
             label14.Size = new Size(118, 20);
             label14.TabIndex = 36;
@@ -488,7 +504,7 @@
             // 
             // TextDiskon
             // 
-            TextDiskon.Location = new Point(1429, 770);
+            TextDiskon.Location = new Point(1429, 736);
             TextDiskon.Name = "TextDiskon";
             TextDiskon.Size = new Size(184, 28);
             TextDiskon.TabIndex = 38;
@@ -497,11 +513,60 @@
             // 
             label15.AutoSize = true;
             label15.ForeColor = Color.Cornsilk;
-            label15.Location = new Point(1284, 773);
+            label15.Location = new Point(1284, 739);
             label15.Name = "label15";
             label15.Size = new Size(126, 20);
             label15.TabIndex = 37;
             label15.Text = "Diskon Member";
+            // 
+            // TextIdMember
+            // 
+            TextIdMember.Location = new Point(496, 110);
+            TextIdMember.Name = "TextIdMember";
+            TextIdMember.Size = new Size(193, 28);
+            TextIdMember.TabIndex = 39;
+            TextIdMember.TextChanged += TextIdMember_TextChanged;
+            // 
+            // TextIdBarang
+            // 
+            TextIdBarang.Location = new Point(157, 185);
+            TextIdBarang.Name = "TextIdBarang";
+            TextIdBarang.Size = new Size(193, 28);
+            TextIdBarang.TabIndex = 40;
+            TextIdBarang.TextChanged += TextIdBarang_TextChanged;
+            // 
+            // BtnTambahMember
+            // 
+            BtnTambahMember.ForeColor = SystemColors.ControlText;
+            BtnTambahMember.Location = new Point(695, 109);
+            BtnTambahMember.Name = "BtnTambahMember";
+            BtnTambahMember.Size = new Size(41, 29);
+            BtnTambahMember.TabIndex = 41;
+            BtnTambahMember.Text = "+";
+            BtnTambahMember.UseVisualStyleBackColor = true;
+            BtnTambahMember.Click += BtnTambahMember_Click;
+            // 
+            // BtnTambahBarang
+            // 
+            BtnTambahBarang.ForeColor = SystemColors.ControlText;
+            BtnTambahBarang.Location = new Point(356, 184);
+            BtnTambahBarang.Name = "BtnTambahBarang";
+            BtnTambahBarang.Size = new Size(41, 29);
+            BtnTambahBarang.TabIndex = 42;
+            BtnTambahBarang.Text = "+";
+            BtnTambahBarang.UseVisualStyleBackColor = true;
+            BtnTambahBarang.Click += BtnTambahBarang_Click;
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.Font = new Font("Times New Roman", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label16.ForeColor = Color.Cornsilk;
+            label16.Location = new Point(1527, 54);
+            label16.Name = "label16";
+            label16.Size = new Size(140, 23);
+            label16.TabIndex = 43;
+            label16.Text = "Data Dipending";
             // 
             // DataTransaksi
             // 
@@ -509,6 +574,11 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(122, 178, 211);
             ClientSize = new Size(1924, 1055);
+            Controls.Add(label16);
+            Controls.Add(BtnTambahBarang);
+            Controls.Add(BtnTambahMember);
+            Controls.Add(TextIdBarang);
+            Controls.Add(TextIdMember);
             Controls.Add(TextDiskon);
             Controls.Add(label15);
             Controls.Add(label14);
@@ -519,23 +589,21 @@
             Controls.Add(BtnDipending);
             Controls.Add(TextSub);
             Controls.Add(label13);
-            Controls.Add(TextTotal1);
+            Controls.Add(TextQty);
             Controls.Add(label12);
             Controls.Add(TextHarga);
             Controls.Add(label11);
             Controls.Add(TextNama);
             Controls.Add(label10);
-            Controls.Add(ComboBarang);
             Controls.Add(label9);
             Controls.Add(BtnSave);
-            Controls.Add(TextTotal3);
-            Controls.Add(label8);
             Controls.Add(TextTotal2);
+            Controls.Add(label8);
+            Controls.Add(TextTotal1);
             Controls.Add(label7);
             Controls.Add(TextJumlah);
             Controls.Add(label6);
             Controls.Add(Data_Transaksi);
-            Controls.Add(ComboMember);
             Controls.Add(label5);
             Controls.Add(TextJam);
             Controls.Add(label4);
@@ -568,30 +636,26 @@
         private TextBox TextJam;
         private Label label4;
         private Label label5;
-        private ComboBox ComboMember;
         private DataGridView Data_Transaksi;
         private TextBox TextJumlah;
         private Label label6;
-        private TextBox TextTotal2;
+        private TextBox TextTotal1;
         private Label label7;
-        private TextBox TextTotal3;
+        private TextBox TextTotal2;
         private Label label8;
         private Button BtnSave;
         private Label label9;
-        private ComboBox ComboBarang;
         private TextBox TextNama;
         private Label label10;
         private TextBox TextHarga;
         private Label label11;
-        private TextBox TextTotal1;
+        private TextBox TextQty;
         private Label label12;
         private TextBox TextSub;
         private Label label13;
         private Button BtnDipending;
         private Button BtnKlik;
         private DataGridView Data_Dipending;
-        private DataGridViewTextBoxColumn Id;
-        private DataGridViewTextBoxColumn Member;
         private Button BtnBack;
         private TextBox TextUser;
         private TextBox TextMember;
@@ -605,5 +669,13 @@
         private DataGridViewButtonColumn Hapus;
         private TextBox TextDiskon;
         private Label label15;
+        private DataGridViewTextBoxColumn Id;
+        private DataGridViewTextBoxColumn Member;
+        private DataGridViewTextBoxColumn Status;
+        private TextBox TextIdMember;
+        private TextBox TextIdBarang;
+        private Button BtnTambahMember;
+        private Button BtnTambahBarang;
+        private Label label16;
     }
 }

@@ -23,11 +23,11 @@ namespace AplikasiMinimarket
         private int roleId;
         private string loggedInUsername;
         private string loggedInUserId;
-        private int selectedRowIndex = -1;
         private System.Windows.Forms.Timer timer;
         private bool isHandlingTextChanged = false; // Flag untuk menghindari loop rekrusif
         private bool isSaveButtonClicked = false; // Flag untuk menandakan jika tombol simpan sudah ditekan
         int previousQty = 0;
+
         public DataTransaksi(int roleId, string loggedInUsername, string loggedInUserId)
         {
             InitializeComponent();
@@ -38,30 +38,37 @@ namespace AplikasiMinimarket
 
         private void noOtomatis()
         {
-            string query = "SELECT * FROM tb_transaksi WHERE id_transaksi IN (SELECT MAX(id_transaksi) FROM tb_transaksi)";
+            string query = "SELECT id_transaksi FROM tb_transaksi WHERE id_transaksi LIKE @datePattern ORDER BY id_transaksi DESC";
             string urutanKode;
             long hitung;
+
+            string tanggalSekarang = DateTime.Now.ToString("ddMMyy"); // Format tanggal
+            string prefix = "TRS" + tanggalSekarang; // Prefix transaksi
 
             using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@datePattern", prefix + "%"); // Cari transaksi dengan format tanggal hari ini
                     conn.Open();
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
                         if (dr.Read() && dr.HasRows)
                         {
-                            hitung = long.Parse(dr.GetString(0).Substring(dr.GetString(0).Length - 9));
-                            urutanKode = "TRS" + DateTime.Now.ToString("ddMMyy") + (hitung + currentCount).ToString("D3");
+                            // Ambil nomor urut terakhir dan tambahkan 1
+                            string lastTransaction = dr.GetString(0);
+                            string lastNumber = lastTransaction.Substring(prefix.Length); // Ambil 3 digit terakhir
+                            hitung = long.Parse(lastNumber) + 1;
                         }
                         else
                         {
-                            urutanKode = "TRS" + DateTime.Now.ToString("ddMMyy") + "001";
+                            hitung = 1; // Jika belum ada transaksi, mulai dari 001
                         }
                     }
                 }
             }
 
+            urutanKode = prefix + hitung.ToString("D3"); // Format nomor urut menjadi 3 digit
             TextTransaksi.Text = urutanKode;
         }
 
@@ -83,221 +90,142 @@ namespace AplikasiMinimarket
             timer.Start();
         }
 
-        private void PerformMember()
+        private void TextIdMember_TextChanged(object sender, EventArgs e)
         {
-            ComboMember.Items.Clear();
-            members.Clear();
+            string inputId = TextIdMember.Text.Trim();
 
-            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+            if (!string.IsNullOrEmpty(inputId))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT id_member, nama_member FROM tb_member", conn))
+                using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                 {
                     conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    string query = "SELECT nama_member FROM tb_member WHERE id_member = @id_member";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@id_member", inputId);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            Member member = new Member
-                            {
-                                IdMember = reader["id_member"].ToString(),
-                                NamaMember = reader["nama_member"].ToString()
-                            };
-                            members.Add(member);
-                            ComboMember.Items.Add(member); // Menampilkan IdMember
+                            TextMember.Text = reader.Read() ? reader["nama_member"].ToString() : "";
                         }
                     }
                 }
             }
+            else
+            {
+                TextMember.Text = "";
+            }
         }
 
-        private void PerformBarang()
+        private void BtnTambahMember_Click(object sender, EventArgs e)
         {
-            ComboBarang.Items.Clear();
-            barangs.Clear();
+            PerfromMember();
+        }
 
-            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+        public void SetTextIdMember(string idMember)
+        {
+            if (TextIdMember != null)
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT id_barang, nama_barang, harga_satuan, diskon FROM tb_barang", conn)) // Gantilah id_diskon dengan diskon
+                TextIdMember.Text = idMember;
+            }
+            else
+            {
+                // Opsional: Menambahkan log untuk menangani kasus jika TextIdMember belum diinisialisasi
+                MessageBox.Show("TextIdMember tidak ditemukan.");
+            }
+        }
+
+        private void PerfromMember()
+        {
+            SearchMember searchMember = new SearchMember();
+            searchMember.ShowDialog();
+
+            // Fokus ke TextSearchMember jika ada
+            if (searchMember.Controls["TextSearchMember"] is TextBox textBox)
+            {
+                textBox.Focus();
+            }
+        }
+
+        private void TextIdBarang_TextChanged(object sender, EventArgs e)
+        {
+            string inputIdBarang = TextIdBarang.Text.Trim();
+
+            if (!string.IsNullOrEmpty(inputIdBarang))
+            {
+                using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
                 {
                     conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    string query = "SELECT nama_barang, harga_satuan, diskon FROM tb_barang WHERE id_barang = @id_barang";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@id_barang", inputIdBarang);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            Barang barang = new Barang
+                            if (reader.Read())
                             {
-                                IdBarang = reader["id_barang"].ToString(),
-                                NamaBarang = reader["nama_barang"].ToString(),
-                                HargaBarang = (int)reader["harga_satuan"],
-                                Diskon = reader["diskon"] == DBNull.Value ? 0 : Convert.ToInt32(reader["diskon"]) // Langsung ambil diskon dari kolom diskon
-                            };
-                            barangs.Add(barang);
-                            ComboBarang.Items.Add(barang.IdBarang); // Menampilkan id_barang di ComboBox
+                                TextNama.Text = reader["nama_barang"].ToString();
+
+                                // Ambil harga satuan dan diskon
+                                decimal hargaAsli = Convert.ToDecimal(reader["harga_satuan"]);
+                                decimal diskon = reader["diskon"] != DBNull.Value ? Convert.ToDecimal(reader["diskon"]) : 0;
+
+                                // Hitung harga setelah diskon
+                                decimal hargaSetelahDiskon = hargaAsli - (hargaAsli * diskon / 100);
+
+                                // Format harga dengan "Rp." dan titik pemisah ribuan
+                                TextHarga.Text = string.Format("Rp. {0:N0}", hargaSetelahDiskon);
+                            }
+                            else
+                            {
+                                TextNama.Text = "";
+                                TextHarga.Text = "";
+                            }
                         }
                     }
                 }
             }
+            else
+            {
+                TextNama.Text = "";
+                TextHarga.Text = "";
+            }
         }
 
-        private void ComboMember_TextChanged(object sender, EventArgs e)
+        private void BtnTambahBarang_Click(object sender, EventArgs e)
         {
-            if (isHandlingTextChanged || isSaveButtonClicked || ComboMember.SelectedItem != null)
+            PerfromBarang();
+        }
+
+        public void SetTextIdBarang(string idBarang)
+        {
+            if (TextIdBarang != null)
             {
-                return;
-            }
-
-            isHandlingTextChanged = true;
-
-            int cursorPosition = ComboMember.SelectionStart;
-            string currentText = ComboMember.Text;
-
-            var filteredMembers = members.FindAll(b =>
-                b.IdMember.ToUpper().Contains(currentText.ToUpper()));
-
-            // Jika hanya satu item yang cocok, tutup dropdown
-            if (filteredMembers.Count == 1 &&
-                (filteredMembers[0].IdMember.Equals(currentText, StringComparison.OrdinalIgnoreCase)))
-            {
-                ComboMember.DroppedDown = false;
-                ComboMember.SelectedItem = filteredMembers[0].IdMember; // Pilih item yang cocok
+                TextIdBarang.Text = idBarang;
             }
             else
             {
-                // Perbarui item di ComboBox
-                ComboMember.Items.Clear();
-                foreach (var member in filteredMembers)
-                {
-                    ComboMember.Items.Add(member.IdMember);
-                }
-                ComboMember.DroppedDown = true; // Tampilkan dropdown jika lebih dari 1
+                // Opsional: Menambahkan log untuk menangani kasus jika TextIdMember belum diinisialisasi
+                MessageBox.Show("TextIdBarang tidak ditemukan.");
             }
-
-            ComboMember.Text = currentText;
-            ComboMember.SelectionStart = cursorPosition;
-
-            isHandlingTextChanged = false;
         }
 
-
-        private void ComboBarang_TextChanged(object sender, EventArgs e)
+        private void PerfromBarang()
         {
-            if (isHandlingTextChanged || isSaveButtonClicked) return;
+            SearchBarang searchBarang = new SearchBarang();
+            searchBarang.ShowDialog();
 
-            isHandlingTextChanged = true;
-
-            int cursorPosition = ComboBarang.SelectionStart;
-            string currentText = ComboBarang.Text;
-
-            var filteredBarangs = barangs.FindAll(b =>
-                b.IdBarang.ToUpper().Contains(currentText.ToUpper()));
-
-            if (filteredBarangs.Count == 1 &&
-                (filteredBarangs[0].IdBarang.Equals(currentText, StringComparison.OrdinalIgnoreCase)))
+            // Fokus ke TextSearchMember jika ada
+            if (searchBarang.Controls["TextSearchBarang"] is TextBox textBox)
             {
-                ComboBarang.DroppedDown = false;
-            }
-            else
-            {
-                ComboBarang.Items.Clear();
-                foreach (var barang in filteredBarangs)
-                {
-                    ComboBarang.Items.Add(barang.IdBarang); // Tetap menampilkan id_barang
-                }
-                ComboBarang.DroppedDown = true;
-            }
-
-            ComboBarang.Text = currentText;
-            ComboBarang.SelectionStart = cursorPosition;
-
-            isHandlingTextChanged = false;
-        }
-
-        private void ComboMember_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (isHandlingTextChanged || ComboMember.SelectedItem == null)
-            {
-                return;
-            }
-
-            isHandlingTextChanged = true;
-
-            // Pastikan item yang dipilih valid
-            string selectedId = ComboMember.SelectedItem.ToString(); // Ambil teks dari item yang dipilih
-
-            var selectedMember = members.Find(m =>
-                string.Equals(m.IdMember, selectedId, StringComparison.OrdinalIgnoreCase));
-
-            if (selectedMember != null)
-            {
-                // Jika member ditemukan, tampilkan nama member
-                TextMember.Text = selectedMember.NamaMember;
-
-                // Tutup dropdown setelah memilih item
-                ComboMember.DroppedDown = false;
-            }
-            else
-            {
-                // Jika tidak ditemukan, kosongkan TextMember
-                TextMember.Text = string.Empty;
-            }
-
-            isHandlingTextChanged = false;
-        }
-
-        private void ComboBarang_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (ComboBarang.SelectedItem is string selectedId)
-            {
-                var selectedBarang = barangs.Find(b => b.IdBarang == selectedId);
-                if (selectedBarang != null)
-                {
-                    TextNama.Text = selectedBarang.NamaBarang;
-
-                    // Periksa apakah diskon memiliki nilai
-                    if (selectedBarang.Diskon > 0) // Cek diskon langsung
-                    {
-                        // Hitung harga setelah diskon
-                        decimal hargaAsli = selectedBarang.HargaBarang;
-                        decimal hargaSetelahDiskon = hargaAsli - (hargaAsli * selectedBarang.Diskon / 100);
-
-                        // Tampilkan harga setelah diskon
-                        TextHarga.Text = string.Format("Rp. {0:N0}", hargaSetelahDiskon);
-                    }
-                    else
-                    {
-                        // Jika diskon tidak ada atau 0, tampilkan harga asli
-                        TextHarga.Text = string.Format("Rp. {0:N0}", selectedBarang.HargaBarang);
-                    }
-                }
+                textBox.Focus();
             }
         }
 
-        private void ComboMember_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Jika yang ditekan adalah tombol Enter
-            if (e.KeyChar == (char)13)
-            {
-                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
-                ComboBarang.Focus(); // Berpindah ke ComboBarang
-            }
-        }
-
-        private void ComboBarang_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            // Jika yang ditekan adalah tombol Enter
-            if (e.KeyChar == (char)13)
-            {
-                e.Handled = true; // Menghentikan pengolahan input lebih lanjut
-                TextTotal1.Focus(); // Berpindah ke TextTotal1
-            }
-            // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan
-            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
-            {
-                e.Handled = true; // Mencegah input selain angka dan kontrol
-            }
-        }
-
-        private void TextTotal1_KeyPress(object sender, KeyPressEventArgs e)
+        private void TextQty_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Periksa jika tombol yang ditekan adalah Enter
             if (e.KeyChar == (char)13) // Jika tekan Enter
@@ -306,7 +234,7 @@ namespace AplikasiMinimarket
 
                 // Ambil nilai dari TextHarga dan TextTotal1
                 string hargaText = TextHarga.Text;
-                string totalText = TextTotal1.Text;
+                string totalText = TextQty.Text;
 
                 // Menghapus "Rp.", spasi, dan semua titik pemisah ribuan dari harga
                 hargaText = hargaText.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
@@ -333,7 +261,7 @@ namespace AplikasiMinimarket
                 }
             }
             // Memastikan hanya angka dan karakter kontrol (seperti backspace) yang bisa dimasukkan, dan mencegah angka '0' di awal input
-            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) || TextTotal1.Text.Length == 0 && e.KeyChar == '0')
+            else if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) || TextQty.Text.Length == 0 && e.KeyChar == '0')
             {
                 e.Handled = true; // Mencegah input selain angka dan kontrol
             }
@@ -349,7 +277,6 @@ namespace AplikasiMinimarket
             }
         }
 
-
         private void BtnKlik_Click(object sender, EventArgs e)
         {
             PerfromDetailTransaksi();
@@ -364,16 +291,16 @@ namespace AplikasiMinimarket
             isSaveButtonClicked = true; // Tandai bahwa tombol sedang diproses
 
             // Validasi input
-            if (ComboMember.SelectedItem == null || ComboBarang.SelectedItem == null ||
-                string.IsNullOrWhiteSpace(TextTotal1.Text) || string.IsNullOrWhiteSpace(TextSub.Text))
+            if (string.IsNullOrWhiteSpace(TextIdMember.Text) || string.IsNullOrWhiteSpace(TextMember.Text) || string.IsNullOrWhiteSpace(TextIdBarang.Text) || string.IsNullOrWhiteSpace(TextNama.Text) ||
+                string.IsNullOrWhiteSpace(TextQty.Text) || string.IsNullOrWhiteSpace(TextSub.Text))
             {
-                MessageBox.Show("Id Member, Kode Barang, Total, dan Sub Total jangan dikosongkan", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Id Member, Kode Barang, Total, dan Sub Total jangan dikosongkan, dan data harus valid", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 isSaveButtonClicked = false; // Reset status tombol
                 return;
             }
 
-            Member selectedMember = ComboMember.SelectedItem as Member;
-            string selectedBarangId = ComboBarang.SelectedItem as string;
+            string selectedMember = TextIdMember.Text;
+            string selectedBarangId = TextIdBarang.Text;
 
             if (selectedMember != null && selectedBarangId != null)
             {
@@ -397,10 +324,10 @@ namespace AplikasiMinimarket
                                 insertTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_user", loggedInUserId);
 
-                                string grandTotalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+                                string grandTotalText = TextTotal1.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
                                 insertTransaksiCmd.Parameters.AddWithValue("@grand_total", int.Parse(grandTotalText));
                                 insertTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 0);
-                                insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember.IdMember);
+                                insertTransaksiCmd.Parameters.AddWithValue("@id_member", selectedMember);
 
                                 insertTransaksiCmd.ExecuteNonQuery();
                             }
@@ -419,7 +346,7 @@ namespace AplikasiMinimarket
                             // Jika id_barang sudah ada, update qty dan sub_total
                             using (SqlCommand updateDetailTransaksiCmd = new SqlCommand("UPDATE tb_detail_transaksi SET qty = qty + @qty, sub_total = sub_total + @sub_total WHERE id_transaksi = @id_transaksi AND id_barang = @id_barang", conn))
                             {
-                                updateDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text)); // Menambah qty
+                                updateDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextQty.Text)); // Menambah qty
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", ""))); // Menambah sub_total
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
                                 updateDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
@@ -435,7 +362,7 @@ namespace AplikasiMinimarket
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@harga_satuan", int.Parse(TextHarga.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "")));
-                                insertDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+                                insertDetailTransaksiCmd.Parameters.AddWithValue("@qty", int.Parse(TextQty.Text));
                                 insertDetailTransaksiCmd.Parameters.AddWithValue("@sub_total", int.Parse(TextSub.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "")));
 
                                 insertDetailTransaksiCmd.ExecuteNonQuery();
@@ -446,7 +373,7 @@ namespace AplikasiMinimarket
                     // Mengurangi stok barang
                     using (SqlCommand updateStokCmd = new SqlCommand("UPDATE tb_barang SET total_stok = total_stok - @qty WHERE id_barang = @id_barang", conn))
                     {
-                        updateStokCmd.Parameters.AddWithValue("@qty", int.Parse(TextTotal1.Text));
+                        updateStokCmd.Parameters.AddWithValue("@qty", int.Parse(TextQty.Text));
                         updateStokCmd.Parameters.AddWithValue("@id_barang", selectedBarangId);
 
                         updateStokCmd.ExecuteNonQuery();
@@ -464,10 +391,10 @@ namespace AplikasiMinimarket
 
         private void ResetDetailTransaksi()
         {
-            ComboBarang.SelectedIndex = -1;
+            TextIdBarang.Clear();
             TextNama.Clear();
             TextHarga.Clear();
-            TextTotal1.Clear();
+            TextQty.Clear();
             TextSub.Clear();
         }
 
@@ -480,11 +407,10 @@ namespace AplikasiMinimarket
             TextTanggal.Text = witaDate.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
             // Panggil fungsi ini agar timer aktif
             InitializeTime(); // Panggil fungsi ini agar timer aktif
-            PerformMember();
             TextUser.Text = $"{loggedInUserId} - {loggedInUsername}";
-            PerformBarang();
-            TextTotal2.Text = "Rp. " + 0;
+            TextTotal1.Text = "Rp. " + 0;
             LoadDataToDataGridView();
+            LoadDataToDipending();
             TextJumlah.Text = "Rp. ";
         }
 
@@ -493,15 +419,22 @@ namespace AplikasiMinimarket
             Data_Transaksi.Rows.Clear();
             int totalSub = 0;
 
-            string query = "SELECT tb_detail_transaksi.id_detail_transaksi, tb_detail_transaksi.id_barang, tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, tb_detail_transaksi.sub_total " +
+            // Pastikan hanya menampilkan data untuk transaksi terbaru (TextTransaksi.Text)
+            string query = "SELECT tb_detail_transaksi.id_detail_transaksi, tb_detail_transaksi.id_barang, " +
+                            "tb_barang.nama_barang, tb_detail_transaksi.harga_satuan, tb_detail_transaksi.qty, " +
+                            "tb_detail_transaksi.sub_total " +
                             "FROM tb_detail_transaksi " +
-                            "JOIN tb_barang ON tb_detail_transaksi.id_barang = tb_barang.id_barang";
+                            "JOIN tb_barang ON tb_detail_transaksi.id_barang = tb_barang.id_barang " +
+                            "WHERE tb_detail_transaksi.id_transaksi = @id_transaksi"; // Filter transaksi terbaru
 
             using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
             {
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    // Menggunakan parameterized query untuk menghindari SQL Injection
+                    cmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -531,7 +464,7 @@ namespace AplikasiMinimarket
             }
 
             // Tampilkan total sub_total di TextTotal2
-            TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
+            TextTotal1.Text = "Rp. " + totalSub.ToString("N0");
         }
 
         private void Data_Transaksi_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -710,7 +643,7 @@ namespace AplikasiMinimarket
             }
 
             // Tampilkan total ke TextTotal2
-            TextTotal2.Text = "Rp. " + totalSub.ToString("N0");
+            TextTotal1.Text = "Rp. " + totalSub.ToString("N0");
         }
 
         private void Data_Transaksi_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -782,7 +715,149 @@ namespace AplikasiMinimarket
             }
         }
 
-        private void TextTotal2_TextChanged(object sender, EventArgs e)
+        private void BtnDipending_Click(object sender, EventArgs e)
+        {
+            PerfromDipending();
+        }
+
+        private void PerfromDipending()
+        {
+            // Cegah eksekusi simultan
+            if (isHandlingTextChanged || isSaveButtonClicked)
+                return;
+
+            isSaveButtonClicked = true;
+
+            // Validasi untuk memastikan Data_Transaksi tidak kosong
+            if (Data_Transaksi.Rows.Count - 1 <= 0)
+            {
+                MessageBox.Show("Tabel Transaksi harus diisi terlebih dahulu!", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSaveButtonClicked = false;
+                return;
+            }
+
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+            {
+                conn.Open();
+
+                // Hapus semua data dari Data_Transaksi di DataGridView (tanpa menghapus dari database)
+                Data_Transaksi.Rows.Clear();
+
+                // Parse tanggal transaksi dari input pengguna
+                DateTime tanggalTransaksi = DateTime.ParseExact(TextTanggal.Text + " " + TextJam.Text, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
+                // Perbarui status transaksi menjadi 2 (dipending) dan set tanggal transaksi
+                using (SqlCommand updateStatusCmd = new SqlCommand("UPDATE tb_transaksi SET tanggal_transaksi = @tanggal_transaksi, id_status_transaksi = @id_status_transaksi WHERE id_transaksi = @id_transaksi", conn))
+                {
+                    updateStatusCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
+                    updateStatusCmd.Parameters.AddWithValue("@id_status_transaksi", 2); // Status dipending
+                    updateStatusCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
+
+                    updateStatusCmd.ExecuteNonQuery();
+                }
+            }
+
+            noOtomatis();
+            ResetTransaksi();
+            LoadDataToDipending();
+
+            MessageBox.Show("Transaksi telah dipending!", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            isSaveButtonClicked = false; // Reset status klik tombol
+        }
+
+        private void LoadDataToDipending()
+        {
+            Data_Dipending.Rows.Clear(); // Kosongkan DaftarGridView sebelum mengisi data baru
+
+            string query = "SELECT tb_transaksi.id_transaksi, tb_member.nama_member, tb_status_transaksi.nama_status_transaksi " +
+                            "FROM tb_transaksi " +
+                            "JOIN tb_member ON tb_transaksi.id_member = tb_member.id_member " +
+                            "JOIN tb_status_transaksi ON tb_transaksi.id_status_transaksi = tb_status_transaksi.id_status_transaksi " +
+                            "WHERE tb_transaksi.id_status_transaksi = 2"; // Hanya menampilkan data dengan id_status_transaki = 2
+
+            using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string idTransaksi = reader["id_transaksi"].ToString();
+                            string namaMember = reader["nama_member"].ToString();
+                            string namaStatus = reader["nama_status_transaksi"].ToString();
+
+                            // Tambahkan data ke DataGridView
+                            Data_Dipending.Rows.Add(idTransaksi, namaMember, namaStatus);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void Data_Dipending_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Cegah eksekusi simultan
+            if (isHandlingTextChanged || isSaveButtonClicked)
+                return;
+
+            isSaveButtonClicked = true;
+
+            if (e.RowIndex >= 0 && e.RowIndex < Data_Dipending.Rows.Count) // Pastikan baris yang diklik valid
+            {
+                DataGridViewRow row = Data_Dipending.Rows[e.RowIndex];
+
+                // Pastikan sel tidak null sebelum mengaksesnya
+                if (row.Cells[0].Value != null)
+                {
+                    string selectedIdTransaksi = row.Cells[0].Value.ToString();
+                    TextTransaksi.Text = selectedIdTransaksi;
+
+                    // Query yang diperbaiki sesuai format yang diminta
+                    string query = "SELECT tb_transaksi.id_member, tb_member.nama_member " +
+                                   "FROM tb_transaksi " +
+                                   "JOIN tb_member ON tb_transaksi.id_member = tb_member.id_member " +
+                                   "WHERE tb_transaksi.id_transaksi = @id_transaksi";
+
+                    using (SqlConnection conn = new SqlConnection(Connect.conn.ConnectionString))
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id_transaksi", selectedIdTransaksi);
+
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    string idMember = reader["id_member"].ToString();
+                                    string namaMember = reader["nama_member"].ToString();
+
+                                    // Menampilkan id_member di TextIdMember (TextBox)
+                                    TextIdMember.Text = idMember;
+
+                                    // Menampilkan nama_member di TextMember (TextBox)
+                                    TextMember.Text = namaMember;
+                                }
+                            } // Reader akan otomatis tertutup di sini
+                        }
+                    }
+
+                    // Panggil ulang LoadDataToDataGridView untuk menampilkan detail transaksi terbaru
+                    LoadDataToDataGridView();
+                }
+                else
+                {
+                    MessageBox.Show("Data transaksi tidak valid!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            isSaveButtonClicked = false;
+        }
+
+        private void TextTotal1_TextChanged(object sender, EventArgs e)
         {
             // Panggil fungsi untuk menghitung diskon setiap kali teks berubah
             ApplyDiscountBasedOnTotalAndMember();
@@ -791,10 +866,10 @@ namespace AplikasiMinimarket
         private void ApplyDiscountBasedOnTotalAndMember()
         {
             // Ambil id_member dari ComboMember
-            string idMember = ComboMember.Text;
+            string idMember = TextIdMember.Text;
 
             // Ambil nilai total dari TextTotal2
-            string totalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+            string totalText = TextTotal1.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
 
             if (int.TryParse(totalText, out int totalTransaksi))
             {
@@ -892,7 +967,7 @@ namespace AplikasiMinimarket
             {
                 // Ambil nilai dari TextJumlah dan TextTotal2
                 string jumlahText = TextJumlah.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
-                string total2Text = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
+                string total2Text = TextTotal1.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
                 string discountText = TextDiskon.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "").Trim();
 
                 if (long.TryParse(jumlahText, out long jumlah) && long.TryParse(total2Text, out long total2))
@@ -910,14 +985,14 @@ namespace AplikasiMinimarket
                     }
 
                     // Tampilkan hasil di TextTotal3
-                    TextTotal3.Text = "Rp. " + total3.ToString("N0");
+                    TextTotal2.Text = "Rp. " + total3.ToString("N0");
 
-                    TextTotal3.Focus();
+                    TextTotal2.Focus();
                 }
                 else
                 {
                     // Jika parsing gagal, tampilkan Rp. 0 di TextTotal3
-                    TextTotal3.Text = "Rp. 0";
+                    TextTotal2.Text = "Rp. 0";
                 }
 
                 // Cegah bunyi "ding" ketika Enter ditekan
@@ -950,8 +1025,11 @@ namespace AplikasiMinimarket
 
             // Validasi untuk TextJumlah (tidak boleh kosong) dan validasi untuk TextTotal3 tidak boleh minus
             string jumlahText = TextJumlah.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
-            string total3Text = TextTotal3.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
-            if (string.IsNullOrWhiteSpace(jumlahText) || jumlahText == "0" || int.TryParse(total3Text, out int total3Value) && total3Value < 0)
+            string total2Text = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+
+            if (string.IsNullOrWhiteSpace(jumlahText) || jumlahText == "0" ||
+                string.IsNullOrWhiteSpace(total2Text) || total2Text == "0" ||
+                int.TryParse(total2Text, out int total2Value) && total2Value < 0)
             {
                 MessageBox.Show("Jumlah Bayar tidak boleh kosong dan Total Kembalian tidak boleh minus!", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 isSaveButtonClicked = false;
@@ -970,13 +1048,26 @@ namespace AplikasiMinimarket
                     deleteDetailTransaksiCmd.ExecuteNonQuery();
                 }
 
-                // Hitung grand_total dari TextTotal2
-                string grandTotalText = TextTotal2.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
-                int grandTotal = int.Parse(grandTotalText); // Deklarasikan grandTotal di sini
+                // Periksa apakah TextDiskon memiliki nilai
+                string grandTotalText;
+                if (!string.IsNullOrWhiteSpace(TextDiskon.Text)) // Jika TextDiskon memiliki nilai, gunakan itu
+                {
+                    grandTotalText = TextDiskon.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+                }
+                else // Jika tidak ada nilai di TextDiskon, gunakan TextTotal1 seperti sebelumnya
+                {
+                    grandTotalText = TextTotal1.Text.Replace("Rp.", "").Replace(" ", "").Replace(".", "");
+                }
+
+                int grandTotal = int.Parse(grandTotalText); // Konversi ke integer
+
+                // Parsing tanggal_transaksi dari TextTanggal dan TextJam
+                DateTime tanggalTransaksi = DateTime.ParseExact(TextTanggal.Text + " " + TextJam.Text, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
 
                 // Perbarui data di tb_transaksi
-                using (SqlCommand updateTransaksiCmd = new SqlCommand("UPDATE tb_transaksi SET grand_total = @grand_total, id_status_transaksi = @id_status_transaksi WHERE id_transaksi = @id_transaksi", conn))
+                using (SqlCommand updateTransaksiCmd = new SqlCommand("UPDATE tb_transaksi SET tanggal_transaksi = @tanggal_transaksi, grand_total = @grand_total, id_status_transaksi = @id_status_transaksi WHERE id_transaksi = @id_transaksi", conn))
                 {
+                    updateTransaksiCmd.Parameters.AddWithValue("@tanggal_transaksi", tanggalTransaksi);
                     updateTransaksiCmd.Parameters.AddWithValue("@grand_total", grandTotal);
                     updateTransaksiCmd.Parameters.AddWithValue("@id_status_transaksi", 1); // Ubah status transaksi menjadi 1
                     updateTransaksiCmd.Parameters.AddWithValue("@id_transaksi", TextTransaksi.Text);
@@ -985,7 +1076,7 @@ namespace AplikasiMinimarket
                 }
 
                 // Tambahkan logika untuk pemberian poin
-                string idMemberStr = ComboMember.Text; // Ambil id_member dari ComboMember
+                string idMemberStr = TextIdMember.Text; // Ambil id_member dari ComboMember
 
                 if (!string.IsNullOrWhiteSpace(idMemberStr) && idMemberStr != "0") // Cek jika id_member tidak kosong dan bukan "0"
                 {
@@ -1015,6 +1106,7 @@ namespace AplikasiMinimarket
                 noOtomatis();
 
                 // Perbarui tampilan dan reset komponen
+                LoadDataToDipending();
                 LoadDataToDataGridView();
                 ResetTransaksi();
             }
@@ -1026,16 +1118,16 @@ namespace AplikasiMinimarket
 
         private void ResetTransaksi()
         {
-            ComboMember.SelectedIndex = -1;
+            TextIdMember.Clear();
             TextMember.Clear();
-            ComboBarang.SelectedIndex = -1;
+            TextIdBarang.Clear();
             TextNama.Clear();
             TextHarga.Clear();
-            TextTotal1.Clear();
+            TextQty.Clear();
             TextSub.Clear();
-            TextTotal2.Text = "Rp. 0";
+            TextTotal1.Text = "Rp. 0";
             TextJumlah.Clear();
-            TextTotal3.Clear();
+            TextTotal2.Clear();
         }
     }
 }
